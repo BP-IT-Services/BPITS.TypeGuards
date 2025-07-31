@@ -1,16 +1,15 @@
 name: Build & Deploy NPM
 on:
   workflow_dispatch: # Allow running the workflow manually from the GitHub UI
-# Temporarily disable running this pipeline
-#  push:
-#    branches:
-#      - 'main'       # Run the workflow when pushing to the main branch
-#  pull_request:
-#    branches:
-#      - '*'          # Run the workflow for all pull requests
-#  release:
-#    types:
-#      - published    # Run the workflow when a new GitHub release is published
+  push:
+    branches:
+      - 'main'       # Run the workflow when pushing to the main branch
+  pull_request:
+    branches:
+      - '*'          # Run the workflow for all pull requests
+  release:
+    types:
+      - published    # Run the workflow when a new GitHub release is published
 
 env:
   NpmDirectory: dist/
@@ -55,6 +54,9 @@ jobs:
 
       - name: Build @bpits/type-guards
         run: npm run build
+
+      - name: Run tests
+        run: npm run test
 
       - name: Store NPM artifact
         uses: actions/upload-artifact@v4
