@@ -10,7 +10,7 @@
     "noEmit": true
   },
   "include": [
-    "./tests/compiler/compiler-tests.ts",
+    "./tests/compiler/compiler-test-runner.ts",
     "./src/**/*"
   ]
 }

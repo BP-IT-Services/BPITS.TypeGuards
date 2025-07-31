@@ -9,7 +9,7 @@ interface TestResult {
     actualOutput: string;
 }
 
-class CompilerTester {
+class CompilerTestRunner {
     private readonly _debugMode = false;
 
     private readonly testDir = __dirname;
@@ -226,4 +226,4 @@ class CompilerTester {
 }
 
 // Run the tests
-new CompilerTester().runTests();
+new CompilerTestRunner().runTests();

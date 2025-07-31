@@ -8,7 +8,7 @@
     "build": "tsc && npx shx cp ./package.json dist/package.json",
 
     "test": "npm run test:compiler",
-    "test:compiler": "ts-node tests/compiler/compiler-tests.ts"
+    "test:compiler": "ts-node tests/compiler/compiler-test-runner.ts"
   },
   "devDependencies": {
     "@types/node": "^24.1.0",
