@@ -5,9 +5,9 @@ A TypeScript library that provides a fluent, type-safe way to build runtime type
 
 ## Table of Contents
 
+- [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Why Use This Library?](#why-use-this-library)
-- [Installation](#installation)
 - [Basic Usage](#basic-usage)
 - [Built-in Type Guards](#built-in-type-guards)
 - [Advanced Usage](#advanced-usage)
@@ -20,11 +20,13 @@ A TypeScript library that provides a fluent, type-safe way to build runtime type
 - [Contributing](#contributing)
 - [License](#license)
 
-## Quick Start
+## Installation
 
 ```bash
 npm install @bpits/type-guards
 ```
+
+## Quick Start
 
 ```typescript
 import { StrictTypeGuardBuilder, CommonTypeGuards } from '@bpits/type-guards';
@@ -78,12 +80,6 @@ This library provides:
 - **Fluent API**: Easy to read and maintain
 - **Reusable validators**: Common type guards included
 - **Flexible validation**: Support for complex nested structures
-
-## Installation
-
-```bash
-npm install @bpits/type-guards
-```
 
 ## Basic Usage
 
