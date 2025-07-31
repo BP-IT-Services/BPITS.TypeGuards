@@ -1,14 +1,14 @@
 {
-  "name": "BPITS.TypeGuards",
-  "version": "1.0.0",
+  "name": "@bpits/type-guards",
+  "version": "0.0.1",
   "description": "",
-  "main": "dist/index.js",
+  "license": "MIT",
+  "main": "index.js",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc && npx shx cp ./package.json dist/package.json"
   },
-  "dependencies": {},
   "devDependencies": {
+    "shx": "^0.4.0",
     "typescript": "^5.5.3"
-  },
-  "private": true
+  }
 }
