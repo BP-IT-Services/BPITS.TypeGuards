@@ -1,4 +1,5 @@
 # @bpits/type-guards
+[![Build](https://github.com/BP-IT-Services/BPITS.TypeGuards/actions/workflows/build-deploy-npm.yml/badge.svg)](https://github.com/BP-IT-Services/BPITS.TypeGuards/actions/workflows/build-deploy-npm.yml)
 
 A TypeScript library that provides a fluent, type-safe way to build runtime type guards with compile-time validation and helpful debugging features.
 
