@@ -67,12 +67,17 @@ export class TypeGuardBuilder<T> {
                 return false;
             }
 
+            const hasRootValidator = this._rootValidators.length > 0;
             const recordObj = obj as Record<keyof T, unknown>;
             const objKeys = Object.keys(obj) as Array<keyof T>;
             for (const key of objKeys) {
                 const keyValidator = this._validators.get(key);
                 if (!keyValidator) {
-                    console.warn(`No validator specified for property '${key.toString()}' in '${this._rootTypeName}'`);
+                    if(!hasRootValidator) {
+                        // Only show console warnings if a root validator wasn't supplied
+                        console.warn(`No validator specified for property '${key.toString()}' in '${this._rootTypeName}'`);
+                    }
+
                     continue;
                 }
 
