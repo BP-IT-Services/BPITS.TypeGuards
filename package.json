@@ -5,10 +5,15 @@
   "license": "MIT",
   "main": "index.js",
   "scripts": {
-    "build": "tsc && npx shx cp ./package.json dist/package.json"
+    "build": "tsc && npx shx cp ./package.json dist/package.json",
+
+    "test": "npm run test:compiler",
+    "test:compiler": "ts-node tests/compiler/compiler-tests.ts"
   },
   "devDependencies": {
+    "@types/node": "^24.1.0",
     "shx": "^0.4.0",
+    "ts-node": "^10.9.2",
     "typescript": "^5.5.3"
   }
 }
