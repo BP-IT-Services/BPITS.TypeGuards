@@ -1,5 +1,5 @@
 ﻿import { TypeGuardPredicate } from "../types";
-type Nullish = null | undefined;
+import { Nullish } from "../types/internal/nullish";
 
 /**
  * A collection of commonly used type guard predicates for basic TypeScript types.

@@ -1,6 +1,6 @@
 ﻿import {TypeGuardPredicate} from "./types";
 import {TypeGuardBuilder} from "./type-guard-builder";
-import { MissingPropertiesError } from "./types/missing-properties-error";
+import { MissingPropertiesError } from "./types/internal/missing-properties-error";
 
 /**
  * A strict, compile-time safe builder for creating type guard functions.
@@ -181,7 +181,7 @@ export class StrictTypeGuardBuilder<T, TValidated extends keyof T = never> {
      *   .validateProperty('id', CommonTypeGuards.basics.string())
      *   .validateProperty('name', CommonTypeGuards.basics.string())
      *   .validateProperty('email', CommonTypeGuards.basics.string())
-     *   .build()(); // Note: double parentheses - build() returns a function that returns the guard
+     *   .build(); // Note: double parentheses - build() returns a function that returns the guard
      *
      * // ❌ This shows compile error: "Missing required properties: email"
      * const incompleteUser = StrictTypeGuardBuilder
@@ -229,7 +229,7 @@ export class StrictTypeGuardBuilder<T, TValidated extends keyof T = never> {
      *   .validateProperty('id', CommonTypeGuards.basics.string())
      *   .validateProperty('name', CommonTypeGuards.basics.string())
      *   .validateProperty('email', CommonTypeGuards.basics.string())
-     *   .buildNullable()(); // Returns guard that accepts User | null | undefined
+     *   .buildNullable(); // Returns guard that accepts User | null | undefined
      *
      * // Usage
      * const userData: unknown = getOptionalApiData(); // might be null
@@ -274,7 +274,7 @@ export class StrictTypeGuardBuilder<T, TValidated extends keyof T = never> {
      *   .validateProperty('name', CommonTypeGuards.basics.string())
      *   .validateProperty('price', CommonTypeGuards.basics.number())
      *   .validateProperty('inStock', CommonTypeGuards.basics.boolean())
-     *   .build()();
+     *   .build();
      * ```
      */
     public static start<T>(typeName: string): StrictTypeGuardBuilder<T> {
