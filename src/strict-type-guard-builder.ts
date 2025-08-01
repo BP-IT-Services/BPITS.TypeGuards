@@ -1,14 +1,6 @@
 ﻿import { TypeGuardPredicate } from "./types";
 import { TypeGuardBuilder } from "./type-guard-builder";
-import { MissingPropertiesError } from "./types/internal/missing-properties-error";
-import { Nullish } from "./types/internal/nullish";
-
-type ValidatedBuildResult<T, TValidated extends keyof T> = keyof T extends TValidated
-    ? {
-        (): (value: unknown) => value is T;
-        nullable<TNull extends Nullish = null | undefined>(...nullishValues: TNull[]): (value: unknown) => value is T | TNull;
-    }
-    : MissingPropertiesError<Exclude<keyof T, TValidated>>;
+import { ValidatedBuildResult } from "./types/internal/validated-build-result";
 
 /**
  * A strict, compile-time safe builder for creating type guard functions.
@@ -40,6 +32,10 @@ type ValidatedBuildResult<T, TValidated extends keyof T> = keyof T extends TVali
  *   .validateProperty('email', CommonTypeGuards.basics.string())
  *   .validateProperty('age', CommonTypeGuards.basics.number())
  *   .build(); // ✅ All properties validated
+ *
+ * // Create the type guards
+ * const userGuard = isUser(); // User type guard
+ * const nullableUserGuard = isUser.nullable(); // User | null | undefined type guard
  *
  * // This will show a compile error indicating missing properties
  * const incompleteUser = StrictTypeGuardBuilder
@@ -179,7 +175,9 @@ export class StrictTypeGuardBuilder<T, TValidated extends keyof T = never> {
      * - Shows warnings for validation failures (unless `TypeGuardBuilder.LogValueReceived = false`)
      * - Shows errors for properties with validation failures
      *
-     * @returns A callable type guard function, or a compile error if properties are missing validation
+     * **Nullable Variants**: Use `.build.nullable()` to create a type guard that also accepts null/undefined values.
+     *
+     * @returns A callable type guard function with optional nullable variant, or a compile error if properties are missing validation
      *
      * @example
      * ```typescript
@@ -189,7 +187,16 @@ export class StrictTypeGuardBuilder<T, TValidated extends keyof T = never> {
      *   .validateProperty('id', CommonTypeGuards.basics.string())
      *   .validateProperty('name', CommonTypeGuards.basics.string())
      *   .validateProperty('email', CommonTypeGuards.basics.string())
-     *   .build(); // Note: double parentheses - build() returns a function that returns the guard
+     *   .build(); // Returns a function that creates the type guard
+     *
+     * // Create the actual type guard
+     * const userGuard = isUser();
+     *
+     * // Create a nullable variant that accepts null and undefined
+     * const nullableUserGuard = isUser.nullable();
+     *
+     * // Create a nullable variant that only accepts null (not undefined)
+     * const userOrNullGuard = isUser.nullable(null);
      *
      * // ❌ This shows compile error: "Missing required properties: email"
      * const incompleteUser = StrictTypeGuardBuilder
@@ -200,9 +207,19 @@ export class StrictTypeGuardBuilder<T, TValidated extends keyof T = never> {
      *
      * // Usage
      * const userData: unknown = getApiData();
-     * if (isUser(userData)) {
+     * if (userGuard(userData)) {
      *   // userData is now fully typed as User
      *   console.log(userData.email.toLowerCase());
+     * }
+     *
+     * // Usage with nullable variant
+     * const optionalUserData: unknown = getOptionalApiData();
+     * if (nullableUserGuard(optionalUserData)) {
+     *   // optionalUserData is now typed as User | null | undefined
+     *   if (optionalUserData) {
+     *     // optionalUserData is now typed as User (null-checked)
+     *     console.log(optionalUserData.name);
+     *   }
      * }
      * ```
      */
@@ -210,84 +227,6 @@ export class StrictTypeGuardBuilder<T, TValidated extends keyof T = never> {
     {
         return this._internalBuilder.build as ValidatedBuildResult<T, TValidated>;
     }
-
-    /**
-     * Build a nullable type guard using the provided validators.
-     *
-     * Similar to `build()`, but the resulting type guard will also accept null/undefined objects as valid.
-     *
-     * **Compile-time Safety**: Same requirements as `build()` - all properties must be validated or ignored,
-     * or at least one root validator must be present.
-     *
-     * **Runtime Behavior**:
-     * - Never throws exceptions - always returns boolean
-     * - Returns true for null or undefined values
-     * - For non-null values, applies the same validation as `build()`
-     * - Negligible performance impact
-     * - Compatible with ES5+ browsers and TypeScript 2.x+
-     *
-     * @returns A callable type guard function that accepts T | null | undefined, or a compile error if properties are missing validation
-     *
-     * @example
-     * ```typescript
-     * const isUserOrNull = StrictTypeGuardBuilder
-     *   .start<User>('User')
-     *   .validateProperty('id', CommonTypeGuards.basics.string())
-     *   .validateProperty('name', CommonTypeGuards.basics.string())
-     *   .validateProperty('email', CommonTypeGuards.basics.string())
-     *   .build.nullable(); // Returns guard that accepts User | null | undefined
-     *
-     * // Usage
-     * const userData: unknown = getOptionalApiData(); // might be null
-     * if (isUserOrNull(userData)) {
-     *   // userData is now typed as User | null | undefined
-     *   if (userData) {
-     *     // userData is now typed as User (null-checked)
-     *     console.log(userData.name);
-     *   } else {
-     *     console.log('No user data available');
-     *   }
-     * }
-     * ```
-     */
-    // public buildNullable<TNull extends Nullish = Nullish>(...nullishValues: TNull[]): keyof T extends TValidated
-    //     ? (value: unknown) => value is T | TNull
-    //     : MissingPropertiesError<Exclude<keyof T, TValidated>>;
-
-    // public buildNullable<TNull extends Nullish = Nullish>(...nullishValues: TNull[]): () => (value: unknown) => value is T | null | undefined {
-    //     const guard = this._internalBuilder.build.nullable()(...nullishValues);
-    //     return (() => guard) as any;
-    // }
-
-    // public buildNullable<TNull extends Nullish = Nullish>(
-    //     ...nullishValues: TNull[]
-    // ): keyof T extends TValidated
-    //     ? (value: unknown) => value is T | TNull
-    //     : MissingPropertiesError<Exclude<keyof T, TValidated>>
-    // {
-    //     const mainFunction = () => () => {};
-    //
-    //     // Add the nullable method
-    //     mainFunction.nullable = <TNull extends Nullish = null | undefined>(...nullishValues: TNull[]) => {
-    //         const allowedNullish = nullishValues.length ? nullishValues : [null, undefined] as TNull[];
-    //         return (obj: unknown): obj is T | TNull => {
-    //             if (allowedNullish.includes(obj as TNull)) {
-    //                 return true;
-    //             }
-    //             return baseGuard(obj);
-    //         };
-    //     };
-    //
-    //     return this._internalBuilder.build.nullable()(...nullishValues);
-    //     // const allowedNullish = nullishValues.length ? nullishValues : [ null, undefined ] as TNull[];
-    //     //
-    //     // return ((obj: unknown): obj is T | TNull => {
-    //     //     if (allowedNullish.includes(obj as TNull)) {
-    //     //         return true;
-    //     //     }
-    //     //     return baseGuard(obj);
-    //     // }) as any;
-    // }
 
     /**
      * Create a StrictTypeGuardBuilder instance.

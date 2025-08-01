@@ -1,11 +1,7 @@
 ﻿import { TypeGuardPredicate } from "./types";
 import { Nullish } from "./types/internal/nullish";
 import { CommonTypeGuards } from "./type-guards";
-
-type BuildResult<T> = {
-    (): (value: unknown) => value is T;
-    nullable<TNull extends Nullish = null | undefined>(...nullishValues: TNull[]): (value: unknown) => value is T | TNull;
-}
+import { BuildResult } from "./types/internal/build-result";
 
 /**
  * A flexible builder for creating type guard functions with runtime validation and debugging support.
@@ -171,13 +167,6 @@ export class TypeGuardBuilder<T> {
     /**
      * Build a type guard using the provided validators.
      *
-     * **Compile-time Safety**: This method can only be called when one of these conditions is met:
-     * 1. All properties have been validated using `validateProperty()` or ignored using `ignoreProperty()`
-     * 2. At least one call to `validateRoot()` has been made
-     *
-     * If properties are missing validation, TypeScript will show a helpful compile error indicating
-     * exactly which properties need attention.
-     *
      * **Runtime Behavior**:
      * - Never throws exceptions - always returns boolean
      * - Negligible performance impact
@@ -185,31 +174,64 @@ export class TypeGuardBuilder<T> {
      * - Shows warnings for validation failures (unless `TypeGuardBuilder.LogValueReceived = false`)
      * - Shows errors for properties with validation failures
      *
-     * @returns A callable type guard function, or a compile error if properties are missing validation
+     * **Nullable Variants**: Use `.build.nullable()` to create a type guard that also accepts null/undefined values.
+     *
+     * @returns A BuildResult object containing both the main type guard creator and nullable variant methods
      *
      * @example
      * ```typescript
-     * // ✅ This compiles - all properties validated
-     * const isUser = StrictTypeGuardBuilder
-     *   .start<User>('User')
-     *   .validateProperty('id', CommonTypeGuards.basics.string())
-     *   .validateProperty('name', CommonTypeGuards.basics.string())
-     *   .validateProperty('email', CommonTypeGuards.basics.string())
-     *   .build(); // Note: double parentheses - build() returns a function that returns the guard
-     *
-     * // ❌ This shows compile error: "Missing required properties: email"
-     * const incompleteUser = StrictTypeGuardBuilder
-     *   .start<User>('User')
-     *   .validateProperty('id', CommonTypeGuards.basics.string())
-     *   .validateProperty('name', CommonTypeGuards.basics.string())
-     *   .build(); // Compile error guides you to missing properties
-     *
-     * // Usage
-     * const userData: unknown = getApiData();
-     * if (isUser(userData)) {
-     *   // userData is now fully typed as User
-     *   console.log(userData.email.toLowerCase());
+     * interface User {
+     *   id: string;
+     *   name: string;
+     *   email?: string;
      * }
+     *
+     * const userBuilder = TypeGuardBuilder
+     *   .start<User>('User')
+     *   .validateProperty('id', CommonTypeGuards.basics.string())
+     *   .validateProperty('name', CommonTypeGuards.basics.string())
+     *   // email is optional - no validation required
+     *   .build; // Returns BuildResult<User>
+     *
+     * // Create the standard type guard
+     * const isUser = userBuilder(); // (value: unknown) => value is User
+     *
+     * // Create nullable variants
+     * const isUserOrNull = userBuilder.nullable(null); // (value: unknown) => value is User | null
+     * const isUserOrUndefined = userBuilder.nullable(undefined); // (value: unknown) => value is User | undefined
+     * const isUserOrNullish = userBuilder.nullable(); // (value: unknown) => value is User | null | undefined
+     *
+     * // Usage examples
+     * const someData: unknown = getApiData();
+     * if (isUser(someData)) {
+     *   // someData is now typed as User
+     *   console.log(someData.name);
+     *   if (someData.email) {
+     *     console.log(someData.email);
+     *   }
+     * }
+     *
+     * const nullableData: unknown = getOptionalApiData();
+     * if (isUserOrNull(nullableData)) {
+     *   // nullableData is now typed as User | null
+     *   if (nullableData !== null) {
+     *     // nullableData is now typed as User (null-checked)
+     *     console.log(nullableData.name);
+     *   } else {
+     *     console.log('No user data available');
+     *   }
+     * }
+     *
+     * // With root validation (bypasses property-level validation warnings)
+     * const rootValidatedBuilder = TypeGuardBuilder
+     *   .start<User>('User')
+     *   .validateRoot((obj): obj is User => {
+     *     return typeof obj === 'object' && obj !== null && 'id' in obj && 'name' in obj;
+     *   })
+     *   .build;
+     *
+     * const isValidUser = rootValidatedBuilder();
+     * const isValidUserOrNull = rootValidatedBuilder.nullable(null);
      * ```
      */
     public get build(): BuildResult<T> {
