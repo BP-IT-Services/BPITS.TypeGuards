@@ -1,6 +1,33 @@
 ﻿import { TypeGuardPredicate } from "../types";
 import { Nullish } from "../types/internal/nullish";
 
+type NullableTypeGuard<T> = {
+    /**
+     * Creates a type guard that validates values of type T or specified nullish values.
+     *
+     * @template TNull The specific nullish type(s) to allow (null, undefined, or both)
+     * @param nullishValues Optional specific nullish values to allow. If not provided, defaults to both null and undefined
+     * @returns A type guard function for nullable validation
+     */
+    <TNull extends Nullish = Nullish>(...nullishValues: TNull[]): TypeGuardPredicate<T | TNull>;
+};
+
+type NullableTypeGuardFactory<T> = {
+    (): TypeGuardPredicate<T>;
+
+    /**
+     * Creates a nullable variant of this type guard.
+     */
+    nullable: NullableTypeGuard<T>;
+};
+
+type TypeGuardPredicateWithNullable<T> = TypeGuardPredicate<T> & {
+    /**
+     * Creates a nullable variant of this type guard.
+     */
+    nullable: NullableTypeGuard<T>;
+}
+
 /**
  * A collection of commonly used type guard predicates for basic TypeScript types.
  *
@@ -25,6 +52,22 @@ import { Nullish } from "../types/internal/nullish";
  * ```
  */
 export abstract class CommonTypeGuards {
+    private static nullableFunction<T, TNull extends Nullish = Nullish>(...nullishValues: TNull[]): TypeGuardPredicate<T | TNull> {
+        return (obj: unknown): obj is T | TNull => {
+            return (obj === null || obj === undefined) && CommonTypeGuards.basics.nullish(obj, ...nullishValues);
+        };
+    };
+
+    private static createNullableTypeGuard<T>(
+        baseGuard: TypeGuardPredicate<T>
+    ): NullableTypeGuardFactory<T> {
+        // Attach the nullable function to the base guard
+        const nullableGuard = (() => baseGuard) as NullableTypeGuardFactory<T>;
+        nullableGuard.nullable = CommonTypeGuards.nullableFunction;
+
+        return nullableGuard;
+    }
+
     public static basics = {
         /**
          * Validates that a value is null, undefined, or one of the specified nullish values.
@@ -47,7 +90,7 @@ export abstract class CommonTypeGuards {
          * ```
          */
         nullish: <TNull extends Nullish>(obj: unknown, ...nullishValues: TNull[]): obj is TNull => {
-            const allowedNullish = nullishValues.length ? nullishValues : [null, undefined] as TNull[];
+            const allowedNullish = nullishValues.length ? nullishValues : [ null, undefined ] as TNull[];
             return allowedNullish.includes(obj as TNull)
         },
 
@@ -65,7 +108,7 @@ export abstract class CommonTypeGuards {
          * }
          * ```
          */
-        string: (): TypeGuardPredicate<string> => (obj: unknown): obj is string => typeof obj === 'string',
+        string: CommonTypeGuards.createNullableTypeGuard((obj: unknown): obj is string => typeof obj === 'string'),
 
         /**
          * Creates a type guard that validates number values.
@@ -81,7 +124,7 @@ export abstract class CommonTypeGuards {
          * }
          * ```
          */
-        number: (): TypeGuardPredicate<number> => (obj: unknown): obj is number => typeof obj === 'number',
+        number: CommonTypeGuards.createNullableTypeGuard((obj: unknown): obj is number => typeof obj === 'number'),
 
         /**
          * Creates a type guard that validates boolean values.
@@ -97,7 +140,7 @@ export abstract class CommonTypeGuards {
          * }
          * ```
          */
-        boolean: (): TypeGuardPredicate<boolean> => (obj: unknown): obj is boolean => typeof obj === 'boolean',
+        boolean: CommonTypeGuards.createNullableTypeGuard((obj: unknown): obj is boolean => typeof obj === 'boolean'),
 
         /**
          * Creates a type guard that validates object values (including arrays and null).
@@ -113,7 +156,7 @@ export abstract class CommonTypeGuards {
          * }
          * ```
          */
-        object: (): TypeGuardPredicate<object> => (obj: unknown): obj is object => typeof obj === 'object',
+        object: CommonTypeGuards.createNullableTypeGuard((obj: unknown): obj is object => typeof obj === 'object'),
 
         /**
          * Creates a type guard that validates string values or specified nullish values.
@@ -309,7 +352,7 @@ export abstract class CommonTypeGuards {
          * }
          * ```
          */
-        date: (): TypeGuardPredicate<Date> => (obj: unknown): obj is Date => obj instanceof Date,
+        date: CommonTypeGuards.createNullableTypeGuard((obj: unknown): obj is Date => obj instanceof Date),
 
         /**
          * Creates a type guard that validates strings that can be parsed as valid dates.
@@ -325,7 +368,7 @@ export abstract class CommonTypeGuards {
          * }
          * ```
          */
-        dateString: (): TypeGuardPredicate<string> => (obj: unknown): obj is string => typeof obj === 'string' && new Date(obj).toString() !== 'Invalid Date',
+        dateString: CommonTypeGuards.createNullableTypeGuard((obj: unknown): obj is string => typeof obj === 'string' && new Date(obj).toString() !== 'Invalid Date'),
 
         /**
          * Creates a type guard that validates Date objects or specified nullish values.
@@ -438,7 +481,7 @@ export abstract class CommonTypeGuards {
          * }
          * ```
          */
-        array: (): TypeGuardPredicate<Array<unknown>> => (obj: unknown): obj is Array<unknown> => Array.isArray(obj),
+        array: CommonTypeGuards.createNullableTypeGuard((obj: unknown): obj is Array<unknown> => Array.isArray(obj)),
 
         /**
          * Creates a type guard that validates arrays where every element matches the provided type guard.
@@ -508,7 +551,25 @@ export abstract class CommonTypeGuards {
          * }
          * ```
          */
-        arrayOf: <TChild>(typeGuard: (childObj: unknown) => childObj is TChild): TypeGuardPredicate<Array<TChild>> => (obj: unknown): obj is Array<TChild> => Array.isArray(obj) && obj.every(typeGuard),
+        arrayOf: <TChild>(typeGuard: (childObj: unknown) => childObj is TChild): TypeGuardPredicateWithNullable<Array<TChild>> => {
+            const baseArrayGuard = (obj: unknown): obj is Array<TChild> => {
+                if (!Array.isArray(obj)) {
+                    return false;
+                }
+
+                const membersValid = obj.every(typeGuard);
+                if (!membersValid) {
+                    console.warn('Validation failed for member of array');
+                }
+
+                return membersValid;
+            };
+
+            const nullableGuard = baseArrayGuard as TypeGuardPredicateWithNullable<Array<TChild>>;
+            nullableGuard.nullable = CommonTypeGuards.nullableFunction;
+
+            return nullableGuard;
+        },
 
         /**
          * Creates a type guard that validates arrays or specified nullish values.
