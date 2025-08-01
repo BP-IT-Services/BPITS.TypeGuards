@@ -6,14 +6,28 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc && npx shx cp ./package.json dist/package.json",
-
-    "test": "npm run test:compiler",
-    "test:compiler": "ts-node tests/compiler/compiler-test-runner.ts"
+    "test": "npm run test:compiler && npm run test:unit",
+    "test:compiler": "npx ts-node tests/compiler/compiler-test-runner.ts",
+    "test:unit": "npx mocha tests/unit/**/*.test.ts"
   },
   "devDependencies": {
+    "@types/chai": "^4.3.10",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^24.1.0",
+    "chai": "^4.3.10",
+    "mocha": "^11.7.1",
     "shx": "^0.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.3"
+  },
+  "mocha": {
+    "require": ["ts-node/register"],
+    "loader": "ts-node/esm",
+    "reporter": "spec",
+    "slow": 75,
+    "timeout": 2000,
+    "ts-node": {
+      "project": "./tsconfig.test-unit.json"
+    }
   }
 }
