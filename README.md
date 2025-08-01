@@ -14,7 +14,6 @@ A TypeScript library that provides a fluent, type-safe way to build runtime type
 - [TypeGuardBuilder vs StrictTypeGuardBuilder](#typeguardbuilder-vs-stricttypeguardbuilder)
 - [Debugging and Logging](#debugging-and-logging)
 - [Real-World Examples](#real-world-examples)
-- [Migration Guide](#migration-guide)
 - [Best Practices](#best-practices)
 - [TypeScript Configuration](#typescript-configuration)
 - [Contributing](#contributing)
@@ -118,8 +117,8 @@ interface UserProfile {
 const isUserProfile = StrictTypeGuardBuilder
   .start<UserProfile>('UserProfile')
   .validateProperty('username', CommonTypeGuards.basics.string())
-  .validateProperty('bio', CommonTypeGuards.basics.nullableString())
-  .validateProperty('avatar', CommonTypeGuards.basics.nullableString())
+  .validateProperty('bio', CommonTypeGuards.basics.string.nullable(null))
+  .validateProperty('avatar', CommonTypeGuards.basics.string.nullable(undefined))
   .build();
 ```
 
@@ -152,11 +151,12 @@ CommonTypeGuards.basics.number()      // number
 CommonTypeGuards.basics.boolean()     // boolean
 CommonTypeGuards.basics.object()      // object
 
-// Nullable versions
-CommonTypeGuards.basics.nullableString()   // string | null | undefined
-CommonTypeGuards.basics.nullableNumber()   // number | null | undefined
-CommonTypeGuards.basics.nullableBoolean()  // boolean | null | undefined
-CommonTypeGuards.basics.nullableObject()   // object | null | undefined
+// Nullable versions using fluent interface
+CommonTypeGuards.basics.string.nullable()       // string | null | undefined
+CommonTypeGuards.basics.string.nullable(null)   // string | null
+CommonTypeGuards.basics.number.nullable()       // number | null | undefined
+CommonTypeGuards.basics.boolean.nullable()      // boolean | null | undefined
+CommonTypeGuards.basics.object.nullable()       // object | null | undefined
 ```
 
 ### Date Validation
@@ -164,14 +164,17 @@ CommonTypeGuards.basics.nullableObject()   // object | null | undefined
 ```typescript
 CommonTypeGuards.date.date()           // Date object
 CommonTypeGuards.date.dateString()     // Valid date string
-CommonTypeGuards.date.nullableDate()   // Date | null | undefined
-CommonTypeGuards.date.nullableDateString() // Valid date string | null | undefined
+
+// Nullable versions
+CommonTypeGuards.date.date.nullable()        // Date | null | undefined
+CommonTypeGuards.date.dateString.nullable()  // Valid date string | null | undefined
 
 // Usage
 interface Event {
   name: string;
   date: Date;
   created: string; // ISO date string
+  cancelled?: Date; // Optional cancellation date
 }
 
 const isEvent = StrictTypeGuardBuilder
@@ -179,6 +182,7 @@ const isEvent = StrictTypeGuardBuilder
   .validateProperty('name', CommonTypeGuards.basics.string())
   .validateProperty('date', CommonTypeGuards.date.date())
   .validateProperty('created', CommonTypeGuards.date.dateString())
+  .validateProperty('cancelled', CommonTypeGuards.date.date.nullable(undefined))
   .build();
 ```
 
@@ -187,19 +191,23 @@ const isEvent = StrictTypeGuardBuilder
 ```typescript
 CommonTypeGuards.array.array()                    // Array<unknown>
 CommonTypeGuards.array.arrayOf(typeGuard)         // Array<T>
-CommonTypeGuards.array.nullableArray()            // Array<unknown> | null | undefined
-CommonTypeGuards.array.nullableArrayOf(typeGuard) // Array<T> | null | undefined
+
+// Nullable versions
+CommonTypeGuards.array.array.nullable()                    // Array<unknown> | null | undefined
+CommonTypeGuards.array.arrayOf(typeGuard).nullable()         // Array<T> | null | undefined
 
 // Usage
 interface TodoList {
   items: string[];
   priorities: number[];
+  archived?: string[]; // Optional archived items
 }
 
 const isTodoList = StrictTypeGuardBuilder
   .start<TodoList>('TodoList')
   .validateProperty('items', CommonTypeGuards.array.arrayOf(CommonTypeGuards.basics.string()))
   .validateProperty('priorities', CommonTypeGuards.array.arrayOf(CommonTypeGuards.basics.number()))
+  .validateProperty('archived', CommonTypeGuards.array.arrayOf(CommonTypeGuards.basics.string()).nullable(undefined))
   .build();
 ```
 
@@ -246,6 +254,7 @@ interface Address {
 interface Person {
   name: string;
   address: Address;
+  secondaryAddress?: Address;
 }
 
 // First, create a type guard for the nested object
@@ -261,6 +270,7 @@ const isPerson = StrictTypeGuardBuilder
   .start<Person>('Person')
   .validateProperty('name', CommonTypeGuards.basics.string())
   .validateProperty('address', isAddress)
+  .validateProperty('secondaryAddress', isAddress.nullable(undefined))
   .build();
 ```
 
@@ -312,6 +322,14 @@ const isUserOrNull = StrictTypeGuardBuilder
   .validateProperty('name', CommonTypeGuards.basics.string())
   .validateProperty('email', CommonTypeGuards.basics.string())
   .build.nullable(); // Returns (obj: unknown) => obj is User | null | undefined
+
+// Or be more specific about which nullish values to allow
+const isUserOrJustNull = StrictTypeGuardBuilder
+  .start<User>('User')
+  .validateProperty('id', CommonTypeGuards.basics.string())
+  .validateProperty('name', CommonTypeGuards.basics.string())
+  .validateProperty('email', CommonTypeGuards.basics.string())
+  .build.nullable(null); // Returns (obj: unknown) => obj is User | null
 ```
 
 ## TypeGuardBuilder vs StrictTypeGuardBuilder
@@ -425,7 +443,7 @@ const isProfile = StrictTypeGuardBuilder
     .start<ApiUser['profile']>('UserProfile')
     .validateProperty('firstName', CommonTypeGuards.basics.string())
     .validateProperty('lastName', CommonTypeGuards.basics.string())
-    .validateProperty('avatar', CommonTypeGuards.basics.nullableString())
+    .validateProperty('avatar', CommonTypeGuards.basics.string.nullable(undefined))
     .build();
 
 const isApiUser = StrictTypeGuardBuilder
@@ -472,7 +490,7 @@ const isContactForm = StrictTypeGuardBuilder
     .start<ContactForm>('ContactForm')
     .validateProperty('name', CommonTypeGuards.basics.string())
     .validateProperty('email', isEmail)
-    .validateProperty('phone', CommonTypeGuards.basics.nullableString())
+    .validateProperty('phone', CommonTypeGuards.basics.string.nullable(undefined))
     .validateProperty('message', CommonTypeGuards.basics.string())
     .validateProperty('newsletter', CommonTypeGuards.basics.boolean())
     .build();
@@ -486,61 +504,6 @@ function handleFormSubmit(formData: unknown) {
         console.error('Invalid form data submitted');
     }
 }
-```
-
-## Migration Guide
-
-### From Manual Type Guards
-
-Before:
-```typescript
-function isUser(obj: unknown): obj is User {
-    return (
-        typeof obj === 'object'
-        && obj !== null
-        && typeof (obj as User).id === 'string'
-        && typeof (obj as User).name === 'string'
-        && typeof (obj as User).email === 'string'
-    );
-}
-```
-
-After:
-```typescript
-const isUser = StrictTypeGuardBuilder
-    .start<User>('User')
-    .validateProperty('id', CommonTypeGuards.basics.string())
-    .validateProperty('name', CommonTypeGuards.basics.string())
-    .validateProperty('email', CommonTypeGuards.basics.string())
-    .build();
-```
-
-### Gradual Migration
-
-You can migrate gradually using `TypeGuardBuilder` for partial validation:
-
-```typescript
-// Start with basic validation
-const isUser = TypeGuardBuilder
-    .start<User>('User')
-    .validateProperty('id', CommonTypeGuards.basics.string())
-    .build(); // Warns about missing properties, but works
-
-// Later, add more validations
-const isUser = TypeGuardBuilder
-    .start<User>('User')
-    .validateProperty('id', CommonTypeGuards.basics.string())
-    .validateProperty('name', CommonTypeGuards.basics.string())
-    .validateProperty('email', CommonTypeGuards.basics.string())
-    .build();
-
-// Finally, switch to strict mode
-const isUser = StrictTypeGuardBuilder
-    .start<User>('User')
-    .validateProperty('id', CommonTypeGuards.basics.string())
-    .validateProperty('name', CommonTypeGuards.basics.string())
-    .validateProperty('email', CommonTypeGuards.basics.string())
-    .build();
 ```
 
 ## Best Practices
