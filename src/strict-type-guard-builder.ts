@@ -1,6 +1,14 @@
-﻿import {TypeGuardPredicate} from "./types";
-import {TypeGuardBuilder} from "./type-guard-builder";
+﻿import { TypeGuardPredicate } from "./types";
+import { TypeGuardBuilder } from "./type-guard-builder";
 import { MissingPropertiesError } from "./types/internal/missing-properties-error";
+import { Nullish } from "./types/internal/nullish";
+
+type ValidatedBuildResult<T, TValidated extends keyof T> = keyof T extends TValidated
+    ? {
+        (): (value: unknown) => value is T;
+        nullable<TNull extends Nullish = null | undefined>(...nullishValues: TNull[]): (value: unknown) => value is T | TNull;
+    }
+    : MissingPropertiesError<Exclude<keyof T, TValidated>>;
 
 /**
  * A strict, compile-time safe builder for creating type guard functions.
@@ -198,11 +206,9 @@ export class StrictTypeGuardBuilder<T, TValidated extends keyof T = never> {
      * }
      * ```
      */
-    public get build(): keyof T extends TValidated
-        ? () => (value: unknown) => value is T
-        : MissingPropertiesError<Exclude<keyof T, TValidated>> {
-        const guard = this._internalBuilder.build();
-        return (() => guard) as any;
+    public get build(): ValidatedBuildResult<T, TValidated>
+    {
+        return this._internalBuilder.build as ValidatedBuildResult<T, TValidated>;
     }
 
     /**
@@ -229,7 +235,7 @@ export class StrictTypeGuardBuilder<T, TValidated extends keyof T = never> {
      *   .validateProperty('id', CommonTypeGuards.basics.string())
      *   .validateProperty('name', CommonTypeGuards.basics.string())
      *   .validateProperty('email', CommonTypeGuards.basics.string())
-     *   .buildNullable(); // Returns guard that accepts User | null | undefined
+     *   .build.nullable(); // Returns guard that accepts User | null | undefined
      *
      * // Usage
      * const userData: unknown = getOptionalApiData(); // might be null
@@ -244,12 +250,44 @@ export class StrictTypeGuardBuilder<T, TValidated extends keyof T = never> {
      * }
      * ```
      */
-    public get buildNullable(): keyof T extends TValidated
-        ? () => (value: unknown) => value is T | null | undefined
-        : MissingPropertiesError<Exclude<keyof T, TValidated>> {
-        const guard = this._internalBuilder.buildNullable();
-        return (() => guard) as any;
-    }
+    // public buildNullable<TNull extends Nullish = Nullish>(...nullishValues: TNull[]): keyof T extends TValidated
+    //     ? (value: unknown) => value is T | TNull
+    //     : MissingPropertiesError<Exclude<keyof T, TValidated>>;
+
+    // public buildNullable<TNull extends Nullish = Nullish>(...nullishValues: TNull[]): () => (value: unknown) => value is T | null | undefined {
+    //     const guard = this._internalBuilder.build.nullable()(...nullishValues);
+    //     return (() => guard) as any;
+    // }
+
+    // public buildNullable<TNull extends Nullish = Nullish>(
+    //     ...nullishValues: TNull[]
+    // ): keyof T extends TValidated
+    //     ? (value: unknown) => value is T | TNull
+    //     : MissingPropertiesError<Exclude<keyof T, TValidated>>
+    // {
+    //     const mainFunction = () => () => {};
+    //
+    //     // Add the nullable method
+    //     mainFunction.nullable = <TNull extends Nullish = null | undefined>(...nullishValues: TNull[]) => {
+    //         const allowedNullish = nullishValues.length ? nullishValues : [null, undefined] as TNull[];
+    //         return (obj: unknown): obj is T | TNull => {
+    //             if (allowedNullish.includes(obj as TNull)) {
+    //                 return true;
+    //             }
+    //             return baseGuard(obj);
+    //         };
+    //     };
+    //
+    //     return this._internalBuilder.build.nullable()(...nullishValues);
+    //     // const allowedNullish = nullishValues.length ? nullishValues : [ null, undefined ] as TNull[];
+    //     //
+    //     // return ((obj: unknown): obj is T | TNull => {
+    //     //     if (allowedNullish.includes(obj as TNull)) {
+    //     //         return true;
+    //     //     }
+    //     //     return baseGuard(obj);
+    //     // }) as any;
+    // }
 
     /**
      * Create a StrictTypeGuardBuilder instance.

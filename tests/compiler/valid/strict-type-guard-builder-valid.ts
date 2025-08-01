@@ -24,3 +24,18 @@ const userGuardThree = StrictTypeGuardBuilder
     .start<User>('User')
     .validateRoot((obj: unknown): obj is User => true)
     .build();
+
+const userGuardFour = StrictTypeGuardBuilder
+    .start<User>('User')
+    .validateRoot((obj: unknown): obj is User => true)
+    .build.nullable();
+
+const userGuardFive = StrictTypeGuardBuilder
+    .start<User>('User')
+    .validateRoot((obj: unknown): obj is User => true)
+    .build.nullable(null);
+
+const userGuardSix = StrictTypeGuardBuilder
+    .start<User>('User')
+    .validateRoot((obj: unknown): obj is User => true)
+    .build.nullable(null, undefined);

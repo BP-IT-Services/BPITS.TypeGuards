@@ -311,7 +311,7 @@ const isUserOrNull = StrictTypeGuardBuilder
   .validateProperty('id', CommonTypeGuards.basics.string())
   .validateProperty('name', CommonTypeGuards.basics.string())
   .validateProperty('email', CommonTypeGuards.basics.string())
-  .buildNullable(); // Returns (obj: unknown) => obj is User | null | undefined
+  .build.nullable(); // Returns (obj: unknown) => obj is User | null | undefined
 ```
 
 ## TypeGuardBuilder vs StrictTypeGuardBuilder

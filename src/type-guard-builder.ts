@@ -1,4 +1,11 @@
-﻿import {TypeGuardPredicate} from "./types";
+﻿import { TypeGuardPredicate } from "./types";
+import { Nullish } from "./types/internal/nullish";
+import { CommonTypeGuards } from "./type-guards";
+
+type BuildResult<T> = {
+    (): (value: unknown) => value is T;
+    nullable<TNull extends Nullish = null | undefined>(...nullishValues: TNull[]): (value: unknown) => value is T | TNull;
+}
 
 /**
  * A flexible builder for creating type guard functions with runtime validation and debugging support.
@@ -157,7 +164,7 @@ export class TypeGuardBuilder<T> {
     public ignoreProperty<TProperty extends keyof T>(property: TProperty): this {
         const previousValue = this._validators.get(property) ?? [];
         const predicate = (obj: unknown): obj is T[TProperty] => true;
-        this._validators.set(property, [...previousValue, predicate]);
+        this._validators.set(property, [ ...previousValue, predicate ]);
         return this;
     }
 
@@ -205,97 +212,20 @@ export class TypeGuardBuilder<T> {
      * }
      * ```
      */
-    public build(): (value: unknown) => value is T {
-        return (obj: unknown): obj is T => {
-            if (typeof obj !== 'object')
-                return false;
-
-            if (!obj)
-                return false;
-
-            if (!this._rootValidators.every(v => v(obj))) {
-                console.warn(`Validation failed for root object '${this._rootTypeName}'. Value received:`, this.sanitiseValueReceived(obj));
-                return false;
-            }
-
-            const hasRootValidator = this._rootValidators.length > 0;
-            const recordObj = obj as Record<keyof T, unknown>;
-            const objKeys = Object.keys(obj) as Array<keyof T>;
-            for (const key of objKeys) {
-                const keyValidator = this._validators.get(key);
-                if (!keyValidator) {
-                    if(!hasRootValidator) {
-                        // Only show console warnings if a root validator wasn't supplied
-                        console.warn(`No validator specified for property '${key.toString()}' in '${this._rootTypeName}'`);
-                    }
-
-                    continue;
+    public get build(): BuildResult<T> {
+        const baseGuard = this.buildTypeGuard();
+        const mainFunction = () => baseGuard;
+        mainFunction.nullable = <TNull extends Nullish = null | undefined>(...nullishValues: TNull[]) => {
+            return (obj: unknown): obj is T | TNull => {
+                if (obj === null || obj === undefined) {
+                    return CommonTypeGuards.basics.nullish(obj, ...nullishValues);
                 }
 
-                const value = recordObj[key];
-                if (!keyValidator.every(v => v(value))) {
-                    console.warn(`Validation failed for property '${key.toString()}' in '${this._rootTypeName}'. Value received:`, this.sanitiseValueReceived(value));
-                    return false;
-                }
-            }
-
-            // If the object is empty, AND:
-            // 1. We have no root validator defined
-            // 2. We DO have property validators defined 
-            if (objKeys.length === 0 && !hasRootValidator && this._validators.size > 0) {
-                return false;
-            }
-            
-            return true;
+                return baseGuard(obj);
+            };
         };
-    }
 
-    /**
-     * Build a nullable type guard using the provided validators.
-     *
-     * Similar to `build()`, but the resulting type guard will also accept null/undefined objects as valid.
-     *
-     * **Compile-time Safety**: Same requirements as `build()` - all properties must be validated or ignored,
-     * or at least one root validator must be present.
-     *
-     * **Runtime Behavior**:
-     * - Never throws exceptions - always returns boolean
-     * - Returns true for null or undefined values
-     * - For non-null values, applies the same validation as `build()`
-     * - Negligible performance impact
-     * - Compatible with ES5+ browsers and TypeScript 2.x+
-     *
-     * @returns A callable type guard function that accepts T | null | undefined, or a compile error if properties are missing validation
-     *
-     * @example
-     * ```typescript
-     * const isUserOrNull = StrictTypeGuardBuilder
-     *   .start<User>('User')
-     *   .validateProperty('id', CommonTypeGuards.basics.string())
-     *   .validateProperty('name', CommonTypeGuards.basics.string())
-     *   .validateProperty('email', CommonTypeGuards.basics.string())
-     *   .buildNullable(); // Returns guard that accepts User | null | undefined
-     *
-     * // Usage
-     * const userData: unknown = getOptionalApiData(); // might be null
-     * if (isUserOrNull(userData)) {
-     *   // userData is now typed as User | null | undefined
-     *   if (userData) {
-     *     // userData is now typed as User (null-checked)
-     *     console.log(userData.name);
-     *   } else {
-     *     console.log('No user data available');
-     *   }
-     * }
-     * ```
-     */
-    public buildNullable(): TypeGuardPredicate<T | null | undefined> {
-        return (obj: unknown): obj is T | null | undefined => {
-            if (obj === null || obj === undefined)
-                return true;
-
-            return this.build()(obj);
-        }
+        return mainFunction;
     }
 
     /**
@@ -326,6 +256,51 @@ export class TypeGuardBuilder<T> {
      */
     public static start<T>(typeName: string): TypeGuardBuilder<T> {
         return new TypeGuardBuilder<T>(typeName);
+    }
+
+    private buildTypeGuard(): (value: unknown) => value is T {
+        return (obj: unknown): obj is T => {
+            if (typeof obj !== 'object')
+                return false;
+
+            if (!obj)
+                return false;
+
+            if (!this._rootValidators.every(v => v(obj))) {
+                console.warn(`Validation failed for root object '${this._rootTypeName}'. Value received:`, this.sanitiseValueReceived(obj));
+                return false;
+            }
+
+            const hasRootValidator = this._rootValidators.length > 0;
+            const recordObj = obj as Record<keyof T, unknown>;
+            const objKeys = Object.keys(obj) as Array<keyof T>;
+            for (const key of objKeys) {
+                const keyValidator = this._validators.get(key);
+                if (!keyValidator) {
+                    if (!hasRootValidator) {
+                        // Only show console warnings if a root validator wasn't supplied
+                        console.warn(`No validator specified for property '${key.toString()}' in '${this._rootTypeName}'`);
+                    }
+
+                    continue;
+                }
+
+                const value = recordObj[key];
+                if (!keyValidator.every(v => v(value))) {
+                    console.warn(`Validation failed for property '${key.toString()}' in '${this._rootTypeName}'. Value received:`, this.sanitiseValueReceived(value));
+                    return false;
+                }
+            }
+
+            // If the object is empty, AND:
+            // 1. We have no root validator defined
+            // 2. We DO have property validators defined
+            if (objKeys.length === 0 && !hasRootValidator && this._validators.size > 0) {
+                return false;
+            }
+
+            return true;
+        };
     }
 
     private sanitiseValueReceived(value: unknown): unknown {
