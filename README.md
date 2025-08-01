@@ -323,9 +323,9 @@ This library provides two builders:
 - **Type safety**: Prevents you from forgetting to validate properties
 - **Better developer experience**: Clear error messages guide you to missing validations
 
-**Important**: When using `StrictTypeGuardBuilder`, you **must** validate or ignore all properties before calling `build()` or `buildNullable()`. If you don't, TypeScript will show a compile error indicating which properties are missing validation.
+**Important**: When using `StrictTypeGuardBuilder`, you **must** validate or ignore all properties before calling `build()` or `build.nullable()`. If you don't, TypeScript will show a compile error indicating which properties are missing validation.
 
-**Exception**: If you call `validateRoot()`, it assumes the entire object structure will be validated at the root level, allowing you to call `build()` or `buildNullable()` immediately without validating individual properties.
+**Exception**: If you call `validateRoot()`, it assumes the entire object structure will be validated at the root level, allowing you to call `build()` or `build.nullable()` immediately without validating individual properties.
 
 ### TypeGuardBuilder
 - **More flexible**: Allows partial property validation
