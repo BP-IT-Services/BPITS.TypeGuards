@@ -203,4 +203,227 @@ describe('CommonTypeGuards', () => {
             });
         });
     });
+
+    describe('New nullable pattern', () => {
+        describe('Basic types with .nullable()', () => {
+            describe('string.nullable()', () => {
+                it('should validate nullable strings with default nullish values', () => {
+                    const guard = CommonTypeGuards.basics.string.nullable();
+                    expect(guard('hello')).to.be.true;
+                    expect(guard(null)).to.be.true;
+                    expect(guard(undefined)).to.be.true;
+                    expect(guard(123)).to.be.false;
+                });
+
+                it('should validate nullable strings with custom nullish values', () => {
+                    const guardNull = CommonTypeGuards.basics.string.nullable(null);
+                    expect(guardNull('hello')).to.be.true;
+                    expect(guardNull(null)).to.be.true;
+                    expect(guardNull(undefined)).to.be.false; // not in allowed nullish values
+
+                    const guardUndefined = CommonTypeGuards.basics.string.nullable(undefined);
+                    expect(guardUndefined('hello')).to.be.true;
+                    expect(guardUndefined(undefined)).to.be.true;
+                    expect(guardUndefined(null)).to.be.false; // not in allowed nullish values
+
+                    const guardBoth = CommonTypeGuards.basics.string.nullable(null, undefined);
+                    expect(guardBoth('hello')).to.be.true;
+                    expect(guardBoth(null)).to.be.true;
+                    expect(guardBoth(undefined)).to.be.true;
+                });
+            });
+
+            describe('number.nullable()', () => {
+                it('should validate nullable numbers with default nullish values', () => {
+                    const guard = CommonTypeGuards.basics.number.nullable();
+                    expect(guard(123)).to.be.true;
+                    expect(guard(0)).to.be.true;
+                    expect(guard(-1)).to.be.true;
+                    expect(guard(null)).to.be.true;
+                    expect(guard(undefined)).to.be.true;
+                    expect(guard('123')).to.be.false;
+                });
+
+                it('should validate nullable numbers with custom nullish values', () => {
+                    const guardNull = CommonTypeGuards.basics.number.nullable(null);
+                    expect(guardNull(123)).to.be.true;
+                    expect(guardNull(null)).to.be.true;
+                    expect(guardNull(undefined)).to.be.false;
+
+                    const guardUndefined = CommonTypeGuards.basics.number.nullable(undefined);
+                    expect(guardUndefined(123)).to.be.true;
+                    expect(guardUndefined(undefined)).to.be.true;
+                    expect(guardUndefined(null)).to.be.false;
+                });
+            });
+
+            describe('boolean.nullable()', () => {
+                it('should validate nullable booleans with default nullish values', () => {
+                    const guard = CommonTypeGuards.basics.boolean.nullable();
+                    expect(guard(true)).to.be.true;
+                    expect(guard(false)).to.be.true;
+                    expect(guard(null)).to.be.true;
+                    expect(guard(undefined)).to.be.true;
+                    expect(guard(1)).to.be.false;
+                    expect(guard(0)).to.be.false;
+                });
+
+                it('should validate nullable booleans with custom nullish values', () => {
+                    const guardNull = CommonTypeGuards.basics.boolean.nullable(null);
+                    expect(guardNull(true)).to.be.true;
+                    expect(guardNull(false)).to.be.true;
+                    expect(guardNull(null)).to.be.true;
+                    expect(guardNull(undefined)).to.be.false;
+                });
+            });
+
+            describe('object.nullable()', () => {
+                it('should validate nullable objects with default nullish values', () => {
+                    const guard = CommonTypeGuards.basics.object.nullable();
+                    expect(guard({})).to.be.true;
+                    expect(guard({ key: 'value' })).to.be.true;
+                    expect(guard([])).to.be.true; // arrays are objects
+                    expect(guard(null)).to.be.true;
+                    expect(guard(undefined)).to.be.true;
+                    expect(guard('string')).to.be.false;
+                    expect(guard(123)).to.be.false;
+                });
+
+                it('should validate nullable objects with custom nullish values', () => {
+                    const guardUndefined = CommonTypeGuards.basics.object.nullable(undefined);
+                    expect(guardUndefined({})).to.be.true;
+                    expect(guardUndefined(undefined)).to.be.true;
+                    expect(guardUndefined(null)).to.be.false;
+                });
+            });
+        });
+
+        describe('Date types with .nullable()', () => {
+            describe('date.nullable()', () => {
+                it('should validate nullable dates with default nullish values', () => {
+                    const guard = CommonTypeGuards.date.date.nullable();
+                    expect(guard(new Date())).to.be.true;
+                    expect(guard(new Date('2023-01-01'))).to.be.true;
+                    expect(guard(null)).to.be.true;
+                    expect(guard(undefined)).to.be.true;
+                    expect(guard('2023-01-01')).to.be.false;
+                    expect(guard(1234567890)).to.be.false;
+                });
+
+                it('should validate nullable dates with custom nullish values', () => {
+                    const guardNull = CommonTypeGuards.date.date.nullable(null);
+                    expect(guardNull(new Date())).to.be.true;
+                    expect(guardNull(null)).to.be.true;
+                    expect(guardNull(undefined)).to.be.false;
+
+                    const guardUndefined = CommonTypeGuards.date.date.nullable(undefined);
+                    expect(guardUndefined(new Date())).to.be.true;
+                    expect(guardUndefined(undefined)).to.be.true;
+                    expect(guardUndefined(null)).to.be.false;
+                });
+            });
+
+            describe('dateString.nullable()', () => {
+                it('should validate nullable date strings with default nullish values', () => {
+                    const guard = CommonTypeGuards.date.dateString.nullable();
+                    expect(guard('2023-01-01')).to.be.true;
+                    expect(guard('2023-01-01T10:00:00Z')).to.be.true;
+                    expect(guard('January 1, 2023')).to.be.true;
+                    expect(guard(null)).to.be.true;
+                    expect(guard(undefined)).to.be.true;
+                    expect(guard('invalid date string')).to.be.false;
+                    expect(guard(new Date())).to.be.false;
+                });
+
+                it('should validate nullable date strings with custom nullish values', () => {
+                    const guardNull = CommonTypeGuards.date.dateString.nullable(null);
+                    expect(guardNull('2023-01-01')).to.be.true;
+                    expect(guardNull(null)).to.be.true;
+                    expect(guardNull(undefined)).to.be.false;
+
+                    const guardUndefined = CommonTypeGuards.date.dateString.nullable(undefined);
+                    expect(guardUndefined('2023-01-01')).to.be.true;
+                    expect(guardUndefined(undefined)).to.be.true;
+                    expect(guardUndefined(null)).to.be.false;
+                });
+            });
+        });
+
+        describe('Array types with .nullable()', () => {
+            describe('array().nullable()', () => {
+                it('should validate nullable arrays with default nullish values', () => {
+                    const guard = CommonTypeGuards.array.array.nullable();
+                    expect(guard([])).to.be.true;
+                    expect(guard([1, 2, 3])).to.be.true;
+                    expect(guard(['a', 'b', 'c'])).to.be.true;
+                    expect(guard(null)).to.be.true;
+                    expect(guard(undefined)).to.be.true;
+                    expect(guard('not array')).to.be.false;
+                    expect(guard({})).to.be.false;
+                });
+
+                it('should validate nullable arrays with custom nullish values', () => {
+                    const guardNull = CommonTypeGuards.array.array.nullable(null);
+                    expect(guardNull([])).to.be.true;
+                    expect(guardNull([1, 2, 3])).to.be.true;
+                    expect(guardNull(null)).to.be.true;
+                    expect(guardNull(undefined)).to.be.false;
+
+                    const guardUndefined = CommonTypeGuards.array.array.nullable(undefined);
+                    expect(guardUndefined([])).to.be.true;
+                    expect(guardUndefined(undefined)).to.be.true;
+                    expect(guardUndefined(null)).to.be.false;
+                });
+            });
+
+            describe('arrayOf.nullable()', () => {
+                it('should validate nullable typed arrays with default nullish values', () => {
+                    const stringArrayGuard = CommonTypeGuards.array.arrayOf(CommonTypeGuards.basics.string()).nullable();
+                    const numberArrayGuard = CommonTypeGuards.array.arrayOf(CommonTypeGuards.basics.number()).nullable();
+
+                    expect(stringArrayGuard(['a', 'b', 'c'])).to.be.true;
+                    expect(stringArrayGuard([])).to.be.true;
+                    expect(stringArrayGuard(null)).to.be.true;
+                    expect(stringArrayGuard(undefined)).to.be.true;
+                    expect(stringArrayGuard(['a', 1, 'c'])).to.be.false;
+                    expect(stringArrayGuard('not array')).to.be.false;
+
+                    expect(numberArrayGuard([1, 2, 3])).to.be.true;
+                    expect(numberArrayGuard([])).to.be.true;
+                    expect(numberArrayGuard(null)).to.be.true;
+                    expect(numberArrayGuard(undefined)).to.be.true;
+                    expect(numberArrayGuard([1, 'b', 3])).to.be.false;
+                });
+
+                it('should validate nullable typed arrays with custom nullish values', () => {
+                    const guardNull = CommonTypeGuards.array.arrayOf(CommonTypeGuards.basics.string()).nullable(null);
+                    expect(guardNull(['a', 'b'])).to.be.true;
+                    expect(guardNull([])).to.be.true;
+                    expect(guardNull(null)).to.be.true;
+                    expect(guardNull(undefined)).to.be.false;
+                    expect(guardNull(['a', 1])).to.be.false;
+
+                    const guardUndefined = CommonTypeGuards.array.arrayOf(CommonTypeGuards.basics.string()).nullable(undefined);
+                    expect(guardUndefined(['a', 'b'])).to.be.true;
+                    expect(guardUndefined(undefined)).to.be.true;
+                    expect(guardUndefined(null)).to.be.false;
+                });
+            });
+
+            describe('nested arrayOf.nullable()', () => {
+                it('should validate nullable nested arrays', () => {
+                    const nestedArrayGuard = CommonTypeGuards.array.arrayOf(
+                        CommonTypeGuards.array.arrayOf(CommonTypeGuards.basics.string())
+                    ).nullable();
+
+                    expect(nestedArrayGuard([['a', 'b'], ['c', 'd']])).to.be.true;
+                    expect(nestedArrayGuard([])).to.be.true;
+                    expect(nestedArrayGuard(null)).to.be.true;
+                    expect(nestedArrayGuard(undefined)).to.be.true;
+                    expect(nestedArrayGuard([['a', 1], ['c', 'd']])).to.be.false;
+                    expect(nestedArrayGuard(['not', 'nested'])).to.be.false;
+                });
+            });
+        });
+    });
 });
