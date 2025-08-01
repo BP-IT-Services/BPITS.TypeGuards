@@ -51,10 +51,16 @@ type TypeGuardPredicateWithNullable<T> = TypeGuardPredicate<T> & {
  * ```
  */
 export abstract class CommonTypeGuards {
-    private static nullableFunction<T, TNull extends Nullish = Nullish>(...nullishValues: TNull[]): TypeGuardPredicate<T | TNull> {
-        return (obj: unknown): obj is T | TNull => {
-            return (obj === null || obj === undefined) && CommonTypeGuards.basics.nullish(obj, ...nullishValues);
-        };
+    private static makeNullableFunction<T, TNull extends Nullish = Nullish>(baseTypeGuard: TypeGuardPredicate<T>, ...nullishValues: TNull[]) {
+        return (...nullishValues: TNull[]) => {
+            return (obj: unknown): obj is T | TNull => {
+                if (obj === null || obj === undefined) {
+                    return CommonTypeGuards.basics.nullish(obj, ...nullishValues);
+                }
+
+                return baseTypeGuard(obj);
+            };
+        }
     };
 
     private static createNullableTypeGuard<T>(
@@ -62,7 +68,7 @@ export abstract class CommonTypeGuards {
     ): NullableTypeGuardFactory<T> {
         // Attach the nullable function to the base guard
         const nullableGuard = (() => baseGuard) as NullableTypeGuardFactory<T>;
-        nullableGuard.nullable = CommonTypeGuards.nullableFunction;
+        nullableGuard.nullable = CommonTypeGuards.makeNullableFunction(baseGuard);
 
         return nullableGuard;
     }
@@ -577,7 +583,7 @@ export abstract class CommonTypeGuards {
             };
 
             const nullableGuard = baseArrayGuard as TypeGuardPredicateWithNullable<Array<TChild>>;
-            nullableGuard.nullable = CommonTypeGuards.nullableFunction;
+            nullableGuard.nullable = CommonTypeGuards.makeNullableFunction(baseArrayGuard);
 
             return nullableGuard;
         },
