@@ -83,11 +83,18 @@ export class TypeGuardBuilder<T> {
 
                 const value = recordObj[key];
                 if (!keyValidator.every(v => v(value))) {
-                    console.warn(`Validation failed for property '${key.toString()} in '${this._rootTypeName}'. Value received:`, this.sanitiseValueReceived(value));
+                    console.warn(`Validation failed for property '${key.toString()}' in '${this._rootTypeName}'. Value received:`, this.sanitiseValueReceived(value));
                     return false;
                 }
             }
 
+            // If the object is empty, AND:
+            // 1. We have no root validator defined
+            // 2. We DO have property validators defined 
+            if (objKeys.length === 0 && !hasRootValidator && this._validators.size > 0) {
+                return false;
+            }
+            
             return true;
         };
     }
