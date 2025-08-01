@@ -3,7 +3,10 @@ type Nullish = null | undefined;
 
 export abstract class CommonTypeGuards {
     public static basics = {
-        nullish: <TNull extends Nullish>(obj: unknown, ...nullishValues: TNull[]): obj is TNull => nullishValues.includes(obj as TNull),
+        nullish: <TNull extends Nullish>(obj: unknown, ...nullishValues: TNull[]): obj is TNull => {
+            const allowedNullish = nullishValues.length ? nullishValues : [null, undefined] as TNull[];
+            return allowedNullish.includes(obj as TNull)
+        },
 
         string: (): TypeGuardPredicate<string> => (obj: unknown): obj is string => typeof obj === 'string',
         number: (): TypeGuardPredicate<number> => (obj: unknown): obj is number => typeof obj === 'number',
@@ -11,20 +14,16 @@ export abstract class CommonTypeGuards {
         object: (): TypeGuardPredicate<object> => (obj: unknown): obj is object => typeof obj === 'object',
 
         nullableString: <TNull extends Nullish = Nullish>(...nullishValues: TNull[]): TypeGuardPredicate<string | TNull> => (obj: unknown): obj is string | TNull => {
-            const allowedNullish = nullishValues.length ? nullishValues : [ null, undefined ] as TNull[];
-            return typeof obj === 'string' || CommonTypeGuards.basics.nullish(obj, ...allowedNullish);
+            return typeof obj === 'string' || CommonTypeGuards.basics.nullish(obj, ...nullishValues);
         },
         nullableNumber: <TNull extends Nullish = Nullish>(...nullishValues: TNull[]): TypeGuardPredicate<number | TNull> => (obj: unknown): obj is number | TNull => {
-            const allowedNullish = nullishValues.length ? nullishValues : [ null, undefined ] as TNull[];
-            return typeof obj === 'number' || CommonTypeGuards.basics.nullish(obj, ...allowedNullish);
+            return typeof obj === 'number' || CommonTypeGuards.basics.nullish(obj, ...nullishValues);
         },
         nullableBoolean: <TNull extends Nullish = Nullish>(...nullishValues: TNull[]): TypeGuardPredicate<boolean | TNull> => (obj: unknown): obj is boolean | TNull => {
-            const allowedNullish = nullishValues.length ? nullishValues : [ null, undefined ] as TNull[];
-            return typeof obj === 'boolean' || CommonTypeGuards.basics.nullish(obj, ...allowedNullish);
+            return typeof obj === 'boolean' || CommonTypeGuards.basics.nullish(obj, ...nullishValues);
         },
         nullableObject: <TNull extends Nullish = Nullish>(...nullishValues: TNull[]): TypeGuardPredicate<object | TNull> => (obj: unknown): obj is object | TNull => {
-            const allowedNullish = nullishValues.length ? nullishValues : [ null, undefined ] as TNull[];
-            return typeof obj === 'object' || CommonTypeGuards.basics.nullish(obj, ...allowedNullish);
+            return typeof obj === 'object' || CommonTypeGuards.basics.nullish(obj, ...nullishValues);
         },
     };
 
