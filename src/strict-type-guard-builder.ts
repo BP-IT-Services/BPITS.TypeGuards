@@ -81,7 +81,8 @@ export class StrictTypeGuardBuilder<T, TValidated extends keyof T = never> {
     public get build(): keyof T extends TValidated
         ? () => (value: unknown) => value is T
         : MissingPropertiesError<Exclude<keyof T, TValidated>> {
-        return this._internalBuilder.build() as any;
+        const guard = this._internalBuilder.build();
+        return (() => guard) as any;
     }
 
     /**
@@ -113,7 +114,8 @@ export class StrictTypeGuardBuilder<T, TValidated extends keyof T = never> {
     public get buildNullable(): keyof T extends TValidated
         ? () => (value: unknown) => value is T | null | undefined
         : MissingPropertiesError<Exclude<keyof T, TValidated>> {
-        return this._internalBuilder.buildNullable() as any;
+        const guard = this._internalBuilder.buildNullable();
+        return (() => guard) as any;
     }
 
     /**
