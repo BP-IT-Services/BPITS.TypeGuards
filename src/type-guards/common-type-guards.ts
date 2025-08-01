@@ -45,9 +45,9 @@ type TypeGuardPredicateWithNullable<T> = TypeGuardPredicate<T> & {
  * }
  *
  * // With nullable types - specify exactly which nullish values to allow
- * const isStringOrNull = CommonTypeGuards.basics.string().nullable(null);
- * const isStringOrUndefined = CommonTypeGuards.basics.string().nullable(undefined);
- * const isStringOrNullish = CommonTypeGuards.basics.string().nullable(); // both null and undefined
+ * const isStringOrNull = CommonTypeGuards.basics.string.nullable(null);
+ * const isStringOrUndefined = CommonTypeGuards.basics.string.nullable(undefined);
+ * const isStringOrNullish = CommonTypeGuards.basics.string.nullable(); // both null and undefined
  * ```
  */
 export abstract class CommonTypeGuards {
@@ -114,9 +114,9 @@ export abstract class CommonTypeGuards {
          * }
          *
          * // Nullable variants
-         * const stringOrNull = CommonTypeGuards.basics.string().nullable(null);
-         * const stringOrUndefined = CommonTypeGuards.basics.string().nullable(undefined);
-         * const stringOrNullish = CommonTypeGuards.basics.string().nullable(); // allows both null and undefined
+         * const stringOrNull = CommonTypeGuards.basics.string.nullable(null);
+         * const stringOrUndefined = CommonTypeGuards.basics.string.nullable(undefined);
+         * const stringOrNullish = CommonTypeGuards.basics.string.nullable(); // allows both null and undefined
          * ```
          */
         string: CommonTypeGuards.createNullableTypeGuard((obj: unknown): obj is string => typeof obj === 'string'),
@@ -136,9 +136,9 @@ export abstract class CommonTypeGuards {
          * }
          *
          * // Nullable variants
-         * const stringOrNull = CommonTypeGuards.basics.string().nullable(null);
-         * const stringOrUndefined = CommonTypeGuards.basics.string().nullable(undefined);
-         * const stringOrNullish = CommonTypeGuards.basics.string().nullable(); // allows both null and undefined
+         * const stringOrNull = CommonTypeGuards.basics.string.nullable(null);
+         * const stringOrUndefined = CommonTypeGuards.basics.string.nullable(undefined);
+         * const stringOrNullish = CommonTypeGuards.basics.string.nullable(); // allows both null and undefined
          * ```
          */
         number: CommonTypeGuards.createNullableTypeGuard((obj: unknown): obj is number => typeof obj === 'number'),
@@ -158,8 +158,8 @@ export abstract class CommonTypeGuards {
          * }
          *
          * // Nullable variants for feature flags
-         * const enableNewUI = CommonTypeGuards.basics.boolean().nullable(null); // null = use system default
-         * const betaFeatures = CommonTypeGuards.basics.boolean().nullable(undefined); // undefined = not set by user
+         * const enableNewUI = CommonTypeGuards.basics.boolean.nullable(null); // null = use system default
+         * const betaFeatures = CommonTypeGuards.basics.boolean.nullable(undefined); // undefined = not set by user
          * ```
          */
         boolean: CommonTypeGuards.createNullableTypeGuard((obj: unknown): obj is boolean => typeof obj === 'boolean'),
@@ -179,9 +179,9 @@ export abstract class CommonTypeGuards {
          * }
          *
          * // Nullable variants
-         * const objectOrNull = CommonTypeGuards.basics.object().nullable(null);
-         * const objectOrUndefined = CommonTypeGuards.basics.object().nullable(undefined);
-         * const objectOrNullish = CommonTypeGuards.basics.object().nullable();
+         * const objectOrNull = CommonTypeGuards.basics.object.nullable(null);
+         * const objectOrUndefined = CommonTypeGuards.basics.object.nullable(undefined);
+         * const objectOrNullish = CommonTypeGuards.basics.object.nullable();
          * ```
          */
         object: CommonTypeGuards.createNullableTypeGuard((obj: unknown): obj is object => typeof obj === 'object'),
@@ -189,13 +189,13 @@ export abstract class CommonTypeGuards {
         /**
          * Creates a type guard that validates string values or specified nullish values.
          *
-         * @deprecated Use `CommonTypeGuards.basics.string().nullable()` instead. This method will be removed in a future version.
+         * @deprecated Use `CommonTypeGuards.basics.string.nullable()` instead. This method will be removed in a future version.
          *
          * **Migration Guide:**
-         * - `nullableString()` → `string().nullable()`
-         * - `nullableString(null)` → `string().nullable(null)`
-         * - `nullableString(undefined)` → `string().nullable(undefined)`
-         * - `nullableString(null, undefined)` → `string().nullable()` or `string().nullable(null, undefined)`
+         * - `nullableString()` → `string.nullable()`
+         * - `nullableString(null)` → `string.nullable(null)`
+         * - `nullableString(undefined)` → `string.nullable(undefined)`
+         * - `nullableString(null, undefined)` → `string.nullable()` or `string.nullable(null, undefined)`
          *
          * **Customizable Nullish Values**: You can specify exactly which nullish values are allowed
          * by passing them as parameters. This gives you fine-grained control over what constitutes
@@ -213,9 +213,9 @@ export abstract class CommonTypeGuards {
          * const stringOrUndefined = CommonTypeGuards.basics.nullableString(undefined);
          *
          * // NEW (recommended) - use these instead
-         * const defaultNullable = CommonTypeGuards.basics.string().nullable();
-         * const stringOrNull = CommonTypeGuards.basics.string().nullable(null);
-         * const stringOrUndefined = CommonTypeGuards.basics.string().nullable(undefined);
+         * const defaultNullable = CommonTypeGuards.basics.string.nullable();
+         * const stringOrNull = CommonTypeGuards.basics.string.nullable(null);
+         * const stringOrUndefined = CommonTypeGuards.basics.string.nullable(undefined);
          * ```
          */
         nullableString: <TNull extends Nullish = Nullish>(...nullishValues: TNull[]): TypeGuardPredicate<string | TNull> => (obj: unknown): obj is string | TNull => {
@@ -225,13 +225,13 @@ export abstract class CommonTypeGuards {
         /**
          * Creates a type guard that validates number values or specified nullish values.
          *
-         * @deprecated Use `CommonTypeGuards.basics.number().nullable()` instead. This method will be removed in a future version.
+         * @deprecated Use `CommonTypeGuards.basics.number.nullable()` instead. This method will be removed in a future version.
          *
          * **Migration Guide:**
-         * - `nullableNumber()` → `number().nullable()`
-         * - `nullableNumber(null)` → `number().nullable(null)`
-         * - `nullableNumber(undefined)` → `number().nullable(undefined)`
-         * - `nullableNumber(null, undefined)` → `number().nullable()` or `number().nullable(null, undefined)`
+         * - `nullableNumber()` → `number.nullable()`
+         * - `nullableNumber(null)` → `number.nullable(null)`
+         * - `nullableNumber(undefined)` → `number.nullable(undefined)`
+         * - `nullableNumber(null, undefined)` → `number.nullable()` or `number.nullable(null, undefined)`
          *
          * **Customizable Nullish Values**: You can specify exactly which nullish values are allowed
          * by passing them as parameters, giving you precise control over nullable behavior.
@@ -248,9 +248,9 @@ export abstract class CommonTypeGuards {
          * const numberOrUndefined = CommonTypeGuards.basics.nullableNumber(undefined);
          *
          * // NEW (recommended) - use these instead
-         * const defaultNullable = CommonTypeGuards.basics.number().nullable();
-         * const numberOrNull = CommonTypeGuards.basics.number().nullable(null);
-         * const numberOrUndefined = CommonTypeGuards.basics.number().nullable(undefined);
+         * const defaultNullable = CommonTypeGuards.basics.number.nullable();
+         * const numberOrNull = CommonTypeGuards.basics.number.nullable(null);
+         * const numberOrUndefined = CommonTypeGuards.basics.number.nullable(undefined);
          * ```
          */
         nullableNumber: <TNull extends Nullish = Nullish>(...nullishValues: TNull[]): TypeGuardPredicate<number | TNull> => (obj: unknown): obj is number | TNull => {
@@ -260,13 +260,13 @@ export abstract class CommonTypeGuards {
         /**
          * Creates a type guard that validates boolean values or specified nullish values.
          *
-         * @deprecated Use `CommonTypeGuards.basics.boolean().nullable()` instead. This method will be removed in a future version.
+         * @deprecated Use `CommonTypeGuards.basics.boolean.nullable()` instead. This method will be removed in a future version.
          *
          * **Migration Guide:**
-         * - `nullableBoolean()` → `boolean().nullable()`
-         * - `nullableBoolean(null)` → `boolean().nullable(null)`
-         * - `nullableBoolean(undefined)` → `boolean().nullable(undefined)`
-         * - `nullableBoolean(null, undefined)` → `boolean().nullable()` or `boolean().nullable(null, undefined)`
+         * - `nullableBoolean()` → `boolean.nullable()`
+         * - `nullableBoolean(null)` → `boolean.nullable(null)`
+         * - `nullableBoolean(undefined)` → `boolean.nullable(undefined)`
+         * - `nullableBoolean(null, undefined)` → `boolean.nullable()` or `boolean.nullable(null, undefined)`
          *
          * **Customizable Nullish Values**: You can specify exactly which nullish values are allowed
          * by passing them as parameters, providing precise control over what constitutes "nullable".
@@ -283,9 +283,9 @@ export abstract class CommonTypeGuards {
          * const booleanOrUndefined = CommonTypeGuards.basics.nullableBoolean(undefined);
          *
          * // NEW (recommended) - use these instead
-         * const defaultNullable = CommonTypeGuards.basics.boolean().nullable();
-         * const booleanOrNull = CommonTypeGuards.basics.boolean().nullable(null);
-         * const booleanOrUndefined = CommonTypeGuards.basics.boolean().nullable(undefined);
+         * const defaultNullable = CommonTypeGuards.basics.boolean.nullable();
+         * const booleanOrNull = CommonTypeGuards.basics.boolean.nullable(null);
+         * const booleanOrUndefined = CommonTypeGuards.basics.boolean.nullable(undefined);
          * ```
          */
         nullableBoolean: <TNull extends Nullish = Nullish>(...nullishValues: TNull[]): TypeGuardPredicate<boolean | TNull> => (obj: unknown): obj is boolean | TNull => {
@@ -295,13 +295,13 @@ export abstract class CommonTypeGuards {
         /**
          * Creates a type guard that validates object values or specified nullish values.
          *
-         * @deprecated Use `CommonTypeGuards.basics.object().nullable()` instead. This method will be removed in a future version.
+         * @deprecated Use `CommonTypeGuards.basics.object.nullable()` instead. This method will be removed in a future version.
          *
          * **Migration Guide:**
-         * - `nullableObject()` → `object().nullable()`
-         * - `nullableObject(null)` → `object().nullable(null)`
-         * - `nullableObject(undefined)` → `object().nullable(undefined)`
-         * - `nullableObject(null, undefined)` → `object().nullable()` or `object().nullable(null, undefined)`
+         * - `nullableObject()` → `object.nullable()`
+         * - `nullableObject(null)` → `object.nullable(null)`
+         * - `nullableObject(undefined)` → `object.nullable(undefined)`
+         * - `nullableObject(null, undefined)` → `object.nullable()` or `object.nullable(null, undefined)`
          *
          * **Customizable Nullish Values**: You can specify exactly which nullish values are allowed
          * by passing them as parameters, giving you fine-grained control over nullable object validation.
@@ -320,9 +320,9 @@ export abstract class CommonTypeGuards {
          * const objectOrUndefined = CommonTypeGuards.basics.nullableObject(undefined);
          *
          * // NEW (recommended) - use these instead
-         * const defaultNullable = CommonTypeGuards.basics.object().nullable();
-         * const objectOrNull = CommonTypeGuards.basics.object().nullable(null);
-         * const objectOrUndefined = CommonTypeGuards.basics.object().nullable(undefined);
+         * const defaultNullable = CommonTypeGuards.basics.object.nullable();
+         * const objectOrNull = CommonTypeGuards.basics.object.nullable(null);
+         * const objectOrUndefined = CommonTypeGuards.basics.object.nullable(undefined);
          * ```
          */
         nullableObject: <TNull extends Nullish = Nullish>(...nullishValues: TNull[]): TypeGuardPredicate<object | TNull> => (obj: unknown): obj is object | TNull => {
@@ -363,8 +363,8 @@ export abstract class CommonTypeGuards {
          *
          * // Nullable variants for database entities
          * const createdAt = CommonTypeGuards.date.date(); // Always present
-         * const updatedAt = CommonTypeGuards.date.date().nullable(null); // null when never updated
-         * const lastLogin = CommonTypeGuards.date.date().nullable(undefined); // undefined when never logged in
+         * const updatedAt = CommonTypeGuards.date.date.nullable(null); // null when never updated
+         * const lastLogin = CommonTypeGuards.date.date.nullable(undefined); // undefined when never logged in
          * ```
          */
         date: CommonTypeGuards.createNullableTypeGuard((obj: unknown): obj is Date => obj instanceof Date),
@@ -385,8 +385,8 @@ export abstract class CommonTypeGuards {
          *
          * // Nullable variants for API timestamps
          * const timestamp = CommonTypeGuards.date.dateString(); // Always present as ISO string
-         * const completedAt = CommonTypeGuards.date.dateString().nullable(null); // null when not completed
-         * const archivedAt = CommonTypeGuards.date.dateString().nullable(undefined); // undefined when not archived
+         * const completedAt = CommonTypeGuards.date.dateString.nullable(null); // null when not completed
+         * const archivedAt = CommonTypeGuards.date.dateString.nullable(undefined); // undefined when not archived
          * ```
          */
         dateString: CommonTypeGuards.createNullableTypeGuard((obj: unknown): obj is string => typeof obj === 'string' && new Date(obj).toString() !== 'Invalid Date'),
@@ -394,13 +394,13 @@ export abstract class CommonTypeGuards {
         /**
          * Creates a type guard that validates Date objects or specified nullish values.
          *
-         * @deprecated Use `CommonTypeGuards.date.date().nullable()` instead. This method will be removed in a future version.
+         * @deprecated Use `CommonTypeGuards.date.date.nullable()` instead. This method will be removed in a future version.
          *
          * **Migration Guide:**
-         * - `nullableDate()` → `date().nullable()`
-         * - `nullableDate(null)` → `date().nullable(null)`
-         * - `nullableDate(undefined)` → `date().nullable(undefined)`
-         * - `nullableDate(null, undefined)` → `date().nullable()` or `date().nullable(null, undefined)`
+         * - `nullableDate()` → `date.nullable()`
+         * - `nullableDate(null)` → `date.nullable(null)`
+         * - `nullableDate(undefined)` → `date.nullable(undefined)`
+         * - `nullableDate(null, undefined)` → `date.nullable()` or `date.nullable(null, undefined)`
          *
          * **Customizable Nullish Values**: You can specify exactly which nullish values are allowed
          * by passing them as parameters, providing precise control over nullable Date validation.
@@ -417,9 +417,9 @@ export abstract class CommonTypeGuards {
          * const dateOrUndefined = CommonTypeGuards.date.nullableDate(undefined);
          *
          * // NEW (recommended) - use these instead
-         * const defaultNullable = CommonTypeGuards.date.date().nullable();
-         * const dateOrNull = CommonTypeGuards.date.date().nullable(null);
-         * const dateOrUndefined = CommonTypeGuards.date.date().nullable(undefined);
+         * const defaultNullable = CommonTypeGuards.date.date.nullable();
+         * const dateOrNull = CommonTypeGuards.date.date.nullable(null);
+         * const dateOrUndefined = CommonTypeGuards.date.date.nullable(undefined);
          * ```
          */
         nullableDate: <TNull extends Nullish = Nullish>(...nullishValues: TNull[]): TypeGuardPredicate<Date | TNull> => (obj: unknown): obj is Date | TNull => {
@@ -429,13 +429,13 @@ export abstract class CommonTypeGuards {
         /**
          * Creates a type guard that validates date strings or specified nullish values.
          *
-         * @deprecated Use `CommonTypeGuards.date.dateString().nullable()` instead. This method will be removed in a future version.
+         * @deprecated Use `CommonTypeGuards.date.dateString.nullable()` instead. This method will be removed in a future version.
          *
          * **Migration Guide:**
-         * - `nullableDateString()` → `dateString().nullable()`
-         * - `nullableDateString(null)` → `dateString().nullable(null)`
-         * - `nullableDateString(undefined)` → `dateString().nullable(undefined)`
-         * - `nullableDateString(null, undefined)` → `dateString().nullable()` or `dateString().nullable(null, undefined)`
+         * - `nullableDateString()` → `dateString.nullable()`
+         * - `nullableDateString(null)` → `dateString.nullable(null)`
+         * - `nullableDateString(undefined)` → `dateString.nullable(undefined)`
+         * - `nullableDateString(null, undefined)` → `dateString.nullable()` or `dateString.nullable(null, undefined)`
          *
          * **Customizable Nullish Values**: You can specify exactly which nullish values are allowed
          * by passing them as parameters, giving you precise control over nullable date string validation.
@@ -452,9 +452,9 @@ export abstract class CommonTypeGuards {
          * const dateStringOrUndefined = CommonTypeGuards.date.nullableDateString(undefined);
          *
          * // NEW (recommended) - use these instead
-         * const defaultNullable = CommonTypeGuards.date.dateString().nullable();
-         * const dateStringOrNull = CommonTypeGuards.date.dateString().nullable(null);
-         * const dateStringOrUndefined = CommonTypeGuards.date.dateString().nullable(undefined);
+         * const defaultNullable = CommonTypeGuards.date.dateString.nullable();
+         * const dateStringOrNull = CommonTypeGuards.date.dateString.nullable(null);
+         * const dateStringOrUndefined = CommonTypeGuards.date.dateString.nullable(undefined);
          * ```
          */
         nullableDateString: <TNull extends Nullish = Nullish>(...nullishValues: TNull[]): TypeGuardPredicate<string | TNull> => (obj: unknown): obj is string | TNull => {
@@ -494,8 +494,8 @@ export abstract class CommonTypeGuards {
          *
          * // Nullable variants for API responses
          * const results = CommonTypeGuards.array.array(); // Always an array
-         * const suggestions = CommonTypeGuards.array.array().nullable(null); // null when no suggestions
-         * const relatedItems = CommonTypeGuards.array.array().nullable(undefined); // undefined when not requested
+         * const suggestions = CommonTypeGuards.array.array.nullable(null); // null when no suggestions
+         * const relatedItems = CommonTypeGuards.array.array.nullable(undefined); // undefined when not requested
          * ```
          */
         array: CommonTypeGuards.createNullableTypeGuard((obj: unknown): obj is Array<unknown> => Array.isArray(obj)),
@@ -591,13 +591,13 @@ export abstract class CommonTypeGuards {
         /**
          * Creates a type guard that validates arrays or specified nullish values.
          *
-         * @deprecated Use `CommonTypeGuards.array.array().nullable()` instead. This method will be removed in a future version.
+         * @deprecated Use `CommonTypeGuards.array.array.nullable()` instead. This method will be removed in a future version.
          *
          * **Migration Guide:**
-         * - `nullableArray()` → `array().nullable()`
-         * - `nullableArray(null)` → `array().nullable(null)`
-         * - `nullableArray(undefined)` → `array().nullable(undefined)`
-         * - `nullableArray(null, undefined)` → `array().nullable()` or `array().nullable(null, undefined)`
+         * - `nullableArray()` → `array.nullable()`
+         * - `nullableArray(null)` → `array.nullable(null)`
+         * - `nullableArray(undefined)` → `array.nullable(undefined)`
+         * - `nullableArray(null, undefined)` → `array.nullable()` or `array.nullable(null, undefined)`
          *
          * **Customizable Nullish Values**: You can specify exactly which nullish values are allowed
          * by passing them as parameters, providing precise control over nullable array validation.
@@ -614,9 +614,9 @@ export abstract class CommonTypeGuards {
          * const arrayOrUndefined = CommonTypeGuards.array.nullableArray(undefined);
          *
          * // NEW (recommended) - use these instead
-         * const defaultNullable = CommonTypeGuards.array.array().nullable();
-         * const arrayOrNull = CommonTypeGuards.array.array().nullable(null);
-         * const arrayOrUndefined = CommonTypeGuards.array.array().nullable(undefined);
+         * const defaultNullable = CommonTypeGuards.array.array.nullable();
+         * const arrayOrNull = CommonTypeGuards.array.array.nullable(null);
+         * const arrayOrUndefined = CommonTypeGuards.array.array.nullable(undefined);
          * ```
          */
         nullableArray: <TNull extends Nullish = Nullish>(...nullishValues: TNull[]): TypeGuardPredicate<Array<unknown> | TNull> => (obj: unknown): obj is Array<unknown> | TNull => {

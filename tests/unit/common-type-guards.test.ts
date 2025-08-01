@@ -350,7 +350,7 @@ describe('CommonTypeGuards', () => {
         });
 
         describe('Array types with .nullable()', () => {
-            describe('array().nullable()', () => {
+            describe('array.nullable()', () => {
                 it('should validate nullable arrays with default nullish values', () => {
                     const guard = CommonTypeGuards.array.array.nullable();
                     expect(guard([])).to.be.true;
