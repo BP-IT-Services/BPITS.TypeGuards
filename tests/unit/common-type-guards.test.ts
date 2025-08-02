@@ -231,6 +231,26 @@ describe('CommonTypeGuards', () => {
                     expect(guardBoth(null)).to.be.true;
                     expect(guardBoth(undefined)).to.be.true;
                 });
+
+                it('V2 nullable type guard should match V1 nullable type guard', () => {
+                    const guardV1Null = CommonTypeGuards.basics.string.nullable(null);
+                    const guardV2Null = CommonTypeGuards.basics.string().nullable(null);
+                    expect(guardV2Null('hello')).to.be.equal(guardV1Null('hello'));
+                    expect(guardV2Null(null)).to.be.equal(guardV1Null(null));
+                    expect(guardV2Null(undefined)).to.be.equal(guardV1Null(undefined));
+
+                    const guardV1Undefined = CommonTypeGuards.basics.string.nullable(undefined);
+                    const guardV2Undefined = CommonTypeGuards.basics.string().nullable(undefined);
+                    expect(guardV2Undefined('hello')).to.be.equal(guardV1Undefined('hello'));
+                    expect(guardV2Undefined(null)).to.be.equal(guardV1Undefined(null));
+                    expect(guardV2Undefined(undefined)).to.be.equal(guardV1Undefined(undefined));
+
+                    const guardV1Both = CommonTypeGuards.basics.string.nullable(null, undefined);
+                    const guardV2Both = CommonTypeGuards.basics.string().nullable(null, undefined);
+                    expect(guardV2Both('hello')).to.be.equal(guardV1Both('hello'));
+                    expect(guardV2Both(null)).to.be.equal(guardV1Both(null));
+                    expect(guardV2Both(undefined)).to.be.equal(guardV1Both(undefined));
+                });
             });
 
             describe('number.nullable()', () => {
@@ -255,6 +275,26 @@ describe('CommonTypeGuards', () => {
                     expect(guardUndefined(undefined)).to.be.true;
                     expect(guardUndefined(null)).to.be.false;
                 });
+
+                it('V2 nullable type guard should match V1 nullable type guard', () => {
+                    const guardV1Null = CommonTypeGuards.basics.number.nullable(null);
+                    const guardV2Null = CommonTypeGuards.basics.number().nullable(null);
+                    expect(guardV2Null(123)).to.be.equal(guardV1Null(123));
+                    expect(guardV2Null(null)).to.be.equal(guardV1Null(null));
+                    expect(guardV2Null(undefined)).to.be.equal(guardV1Null(undefined));
+
+                    const guardV1Undefined = CommonTypeGuards.basics.number.nullable(undefined);
+                    const guardV2Undefined = CommonTypeGuards.basics.number().nullable(undefined);
+                    expect(guardV2Undefined(123)).to.be.equal(guardV1Undefined(123));
+                    expect(guardV2Undefined(null)).to.be.equal(guardV1Undefined(null));
+                    expect(guardV2Undefined(undefined)).to.be.equal(guardV1Undefined(undefined));
+
+                    const guardV1Both = CommonTypeGuards.basics.number.nullable(null, undefined);
+                    const guardV2Both = CommonTypeGuards.basics.number().nullable(null, undefined);
+                    expect(guardV2Both(123)).to.be.equal(guardV1Both(123));
+                    expect(guardV2Both(null)).to.be.equal(guardV1Both(null));
+                    expect(guardV2Both(undefined)).to.be.equal(guardV1Both(undefined));
+                });
             });
 
             describe('boolean.nullable()', () => {
@@ -275,6 +315,29 @@ describe('CommonTypeGuards', () => {
                     expect(guardNull(null)).to.be.true;
                     expect(guardNull(undefined)).to.be.false;
                 });
+
+                it('V2 nullable type guard should match V1 nullable type guard', () => {
+                    const guardV1Null = CommonTypeGuards.basics.boolean.nullable(null);
+                    const guardV2Null = CommonTypeGuards.basics.boolean().nullable(null);
+                    expect(guardV2Null(true)).to.be.equal(guardV1Null(true));
+                    expect(guardV2Null(false)).to.be.equal(guardV1Null(false));
+                    expect(guardV2Null(null)).to.be.equal(guardV1Null(null));
+                    expect(guardV2Null(undefined)).to.be.equal(guardV1Null(undefined));
+
+                    const guardV1Undefined = CommonTypeGuards.basics.boolean.nullable(undefined);
+                    const guardV2Undefined = CommonTypeGuards.basics.boolean().nullable(undefined);
+                    expect(guardV2Undefined(true)).to.be.equal(guardV1Undefined(true));
+                    expect(guardV2Undefined(false)).to.be.equal(guardV1Undefined(false));
+                    expect(guardV2Undefined(null)).to.be.equal(guardV1Undefined(null));
+                    expect(guardV2Undefined(undefined)).to.be.equal(guardV1Undefined(undefined));
+
+                    const guardV1Both = CommonTypeGuards.basics.boolean.nullable(null, undefined);
+                    const guardV2Both = CommonTypeGuards.basics.boolean().nullable(null, undefined);
+                    expect(guardV2Both(true)).to.be.equal(guardV1Both(true));
+                    expect(guardV2Both(false)).to.be.equal(guardV1Both(false));
+                    expect(guardV2Both(null)).to.be.equal(guardV1Both(null));
+                    expect(guardV2Both(undefined)).to.be.equal(guardV1Both(undefined));
+                });
             });
 
             describe('object.nullable()', () => {
@@ -294,6 +357,26 @@ describe('CommonTypeGuards', () => {
                     expect(guardUndefined({})).to.be.true;
                     expect(guardUndefined(undefined)).to.be.true;
                     expect(guardUndefined(null)).to.be.false;
+                });
+
+                it('V2 nullable type guard should match V1 nullable type guard', () => {
+                    const guardV1Null = CommonTypeGuards.basics.object.nullable(null);
+                    const guardV2Null = CommonTypeGuards.basics.object().nullable(null);
+                    expect(guardV2Null({})).to.be.equal(guardV1Null({}));
+                    expect(guardV2Null(null)).to.be.equal(guardV1Null(null));
+                    expect(guardV2Null(undefined)).to.be.equal(guardV1Null(undefined));
+
+                    const guardV1Undefined = CommonTypeGuards.basics.object.nullable(undefined);
+                    const guardV2Undefined = CommonTypeGuards.basics.object().nullable(undefined);
+                    expect(guardV2Undefined({})).to.be.equal(guardV1Undefined({}));
+                    expect(guardV2Undefined(null)).to.be.equal(guardV1Undefined(null));
+                    expect(guardV2Undefined(undefined)).to.be.equal(guardV1Undefined(undefined));
+
+                    const guardV1Both = CommonTypeGuards.basics.object.nullable(null, undefined);
+                    const guardV2Both = CommonTypeGuards.basics.object().nullable(null, undefined);
+                    expect(guardV2Both({})).to.be.equal(guardV1Both({}));
+                    expect(guardV2Both(null)).to.be.equal(guardV1Both(null));
+                    expect(guardV2Both(undefined)).to.be.equal(guardV1Both(undefined));
                 });
             });
         });
@@ -346,6 +429,26 @@ describe('CommonTypeGuards', () => {
                     expect(guardUndefined(undefined)).to.be.true;
                     expect(guardUndefined(null)).to.be.false;
                 });
+
+                it('V2 nullable type guard should match V1 nullable type guard', () => {
+                    const guardV1Null = CommonTypeGuards.date.dateString.nullable(null);
+                    const guardV2Null = CommonTypeGuards.date.dateString().nullable(null);
+                    expect(guardV2Null('2023-01-01')).to.be.equal(guardV1Null('2023-01-01'));
+                    expect(guardV2Null(null)).to.be.equal(guardV1Null(null));
+                    expect(guardV2Null(undefined)).to.be.equal(guardV1Null(undefined));
+
+                    const guardV1Undefined = CommonTypeGuards.date.dateString.nullable(undefined);
+                    const guardV2Undefined = CommonTypeGuards.date.dateString().nullable(undefined);
+                    expect(guardV2Undefined('2023-01-01')).to.be.equal(guardV1Undefined('2023-01-01'));
+                    expect(guardV2Undefined(null)).to.be.equal(guardV1Undefined(null));
+                    expect(guardV2Undefined(undefined)).to.be.equal(guardV1Undefined(undefined));
+
+                    const guardV1Both = CommonTypeGuards.date.dateString.nullable(null, undefined);
+                    const guardV2Both = CommonTypeGuards.date.dateString().nullable(null, undefined);
+                    expect(guardV2Both('2023-01-01')).to.be.equal(guardV1Both('2023-01-01'));
+                    expect(guardV2Both(null)).to.be.equal(guardV1Both(null));
+                    expect(guardV2Both(undefined)).to.be.equal(guardV1Both(undefined));
+                });
             });
         });
 
@@ -373,6 +476,26 @@ describe('CommonTypeGuards', () => {
                     expect(guardUndefined([])).to.be.true;
                     expect(guardUndefined(undefined)).to.be.true;
                     expect(guardUndefined(null)).to.be.false;
+                });
+
+                it('V2 nullable type guard should match V1 nullable type guard', () => {
+                    const guardV1Null = CommonTypeGuards.array.array.nullable(null);
+                    const guardV2Null = CommonTypeGuards.array.array().nullable(null);
+                    expect(guardV2Null([])).to.be.equal(guardV1Null([]));
+                    expect(guardV2Null(null)).to.be.equal(guardV1Null(null));
+                    expect(guardV2Null(undefined)).to.be.equal(guardV1Null(undefined));
+
+                    const guardV1Undefined = CommonTypeGuards.array.array.nullable(undefined);
+                    const guardV2Undefined = CommonTypeGuards.array.array().nullable(undefined);
+                    expect(guardV2Undefined([])).to.be.equal(guardV1Undefined([]));
+                    expect(guardV2Undefined(null)).to.be.equal(guardV1Undefined(null));
+                    expect(guardV2Undefined(undefined)).to.be.equal(guardV1Undefined(undefined));
+
+                    const guardV1Both = CommonTypeGuards.array.array.nullable(null, undefined);
+                    const guardV2Both = CommonTypeGuards.array.array().nullable(null, undefined);
+                    expect(guardV2Both([])).to.be.equal(guardV1Both([]));
+                    expect(guardV2Both(null)).to.be.equal(guardV1Both(null));
+                    expect(guardV2Both(undefined)).to.be.equal(guardV1Both(undefined));
                 });
             });
 
