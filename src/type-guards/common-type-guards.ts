@@ -1,7 +1,7 @@
 ﻿import { TypeGuardPredicate } from "../types";
 import { Nullish } from "../types/internal/nullish";
 
-type NullableTypeGuard<T> = {
+type NullableTypeGuard<T> =
     /**
      * Creates a type guard that validates values of type T or specified nullish values.
      *
@@ -9,11 +9,10 @@ type NullableTypeGuard<T> = {
      * @param nullishValues Optional specific nullish values to allow. If not provided, defaults to both null and undefined
      * @returns A type guard function for nullable validation
      */
-    <TNull extends Nullish = Nullish>(...nullishValues: TNull[]): TypeGuardPredicate<T | TNull>;
-};
+    <TNull extends Nullish = Nullish>(...nullishValues: TNull[]) => TypeGuardPredicate<T | TNull>;
 
 type NullableTypeGuardFactory<T> = {
-    (): TypeGuardPredicate<T>;
+    (): TypeGuardPredicateWithNullable<T>;
 
     /**
      * Creates a nullable variant of this type guard.
@@ -51,8 +50,8 @@ type TypeGuardPredicateWithNullable<T> = TypeGuardPredicate<T> & {
  * ```
  */
 export abstract class CommonTypeGuards {
-    private static makeNullableFunction<T, TNull extends Nullish = Nullish>(baseTypeGuard: TypeGuardPredicate<T>, ...nullishValues: TNull[]) {
-        return (...nullishValues: TNull[]) => {
+    private static makeNullableFunction<T>(baseTypeGuard: TypeGuardPredicate<T>): NullableTypeGuard<T> {
+        return <TNull extends Nullish = Nullish>(...nullishValues: TNull[]) => {
             return (obj: unknown): obj is T | TNull => {
                 if (obj === null || obj === undefined) {
                     return CommonTypeGuards.basics.nullish(obj, ...nullishValues);
@@ -61,16 +60,23 @@ export abstract class CommonTypeGuards {
                 return baseTypeGuard(obj);
             };
         }
+
     };
 
     private static createNullableTypeGuard<T>(
         baseGuard: TypeGuardPredicate<T>
     ): NullableTypeGuardFactory<T> {
-        // Attach the nullable function to the base guard
-        const nullableGuard = (() => baseGuard) as NullableTypeGuardFactory<T>;
-        nullableGuard.nullable = CommonTypeGuards.makeNullableFunction(baseGuard);
+        const nullableFunction = CommonTypeGuards.makeNullableFunction(baseGuard);
 
-        return nullableGuard;
+        // Attach nullable() to the guard itself
+        const nullableBaseGuard = baseGuard as TypeGuardPredicateWithNullable<T>;
+        nullableBaseGuard.nullable = nullableFunction;
+
+        // Attach nullable() to the factory as well for backwards-compatibility
+        const guardFactory = (() => baseGuard) as NullableTypeGuardFactory<T>;
+        guardFactory.nullable = nullableFunction
+
+        return guardFactory;
     }
 
     public static basics = {
