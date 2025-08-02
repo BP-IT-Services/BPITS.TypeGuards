@@ -117,8 +117,8 @@ interface UserProfile {
 const isUserProfile = StrictTypeGuardBuilder
   .start<UserProfile>('UserProfile')
   .validateProperty('username', CommonTypeGuards.basics.string())
-  .validateProperty('bio', CommonTypeGuards.basics.string.nullable(null))
-  .validateProperty('avatar', CommonTypeGuards.basics.string.nullable(undefined))
+  .validateProperty('bio', CommonTypeGuards.basics.string().nullable(null))
+  .validateProperty('avatar', CommonTypeGuards.basics.string().nullable(undefined))
   .build();
 ```
 
@@ -153,7 +153,7 @@ CommonTypeGuards.basics.object()      // object
 
 // Nullable versions using fluent interface
 CommonTypeGuards.basics.string().nullable()       // string | null | undefined
-CommonTypeGuards.basics.string.nullable(null)   // string | null
+CommonTypeGuards.basics.string().nullable(null)   // string | null
 CommonTypeGuards.basics.number().nullable()       // number | null | undefined
 CommonTypeGuards.basics.boolean().nullable()      // boolean | null | undefined
 CommonTypeGuards.basics.object().nullable()       // object | null | undefined
@@ -182,7 +182,7 @@ const isEvent = StrictTypeGuardBuilder
   .validateProperty('name', CommonTypeGuards.basics.string())
   .validateProperty('date', CommonTypeGuards.date.date())
   .validateProperty('created', CommonTypeGuards.date.dateString())
-  .validateProperty('cancelled', CommonTypeGuards.date.date.nullable(undefined))
+  .validateProperty('cancelled', CommonTypeGuards.date.date().nullable(undefined))
   .build();
 ```
 
@@ -443,7 +443,7 @@ const isProfile = StrictTypeGuardBuilder
     .start<ApiUser['profile']>('UserProfile')
     .validateProperty('firstName', CommonTypeGuards.basics.string())
     .validateProperty('lastName', CommonTypeGuards.basics.string())
-    .validateProperty('avatar', CommonTypeGuards.basics.string.nullable(undefined))
+    .validateProperty('avatar', CommonTypeGuards.basics.string().nullable(undefined))
     .build();
 
 const isApiUser = StrictTypeGuardBuilder
@@ -490,7 +490,7 @@ const isContactForm = StrictTypeGuardBuilder
     .start<ContactForm>('ContactForm')
     .validateProperty('name', CommonTypeGuards.basics.string())
     .validateProperty('email', isEmail)
-    .validateProperty('phone', CommonTypeGuards.basics.string.nullable(undefined))
+    .validateProperty('phone', CommonTypeGuards.basics.string().nullable(undefined))
     .validateProperty('message', CommonTypeGuards.basics.string())
     .validateProperty('newsletter', CommonTypeGuards.basics.boolean())
     .build();
