@@ -152,11 +152,11 @@ CommonTypeGuards.basics.boolean()     // boolean
 CommonTypeGuards.basics.object()      // object
 
 // Nullable versions using fluent interface
-CommonTypeGuards.basics.string.nullable()       // string | null | undefined
+CommonTypeGuards.basics.string().nullable()       // string | null | undefined
 CommonTypeGuards.basics.string.nullable(null)   // string | null
-CommonTypeGuards.basics.number.nullable()       // number | null | undefined
-CommonTypeGuards.basics.boolean.nullable()      // boolean | null | undefined
-CommonTypeGuards.basics.object.nullable()       // object | null | undefined
+CommonTypeGuards.basics.number().nullable()       // number | null | undefined
+CommonTypeGuards.basics.boolean().nullable()      // boolean | null | undefined
+CommonTypeGuards.basics.object().nullable()       // object | null | undefined
 ```
 
 ### Date Validation
@@ -166,8 +166,8 @@ CommonTypeGuards.date.date()           // Date object
 CommonTypeGuards.date.dateString()     // Valid date string
 
 // Nullable versions
-CommonTypeGuards.date.date.nullable()        // Date | null | undefined
-CommonTypeGuards.date.dateString.nullable()  // Valid date string | null | undefined
+CommonTypeGuards.date.date().nullable()        // Date | null | undefined
+CommonTypeGuards.date.dateString().nullable()  // Valid date string | null | undefined
 
 // Usage
 interface Event {
@@ -193,7 +193,7 @@ CommonTypeGuards.array.array()                    // Array<unknown>
 CommonTypeGuards.array.arrayOf(typeGuard)         // Array<T>
 
 // Nullable versions
-CommonTypeGuards.array.array.nullable()                    // Array<unknown> | null | undefined
+CommonTypeGuards.array.array().nullable()                    // Array<unknown> | null | undefined
 CommonTypeGuards.array.arrayOf(typeGuard).nullable()         // Array<T> | null | undefined
 
 // Usage
