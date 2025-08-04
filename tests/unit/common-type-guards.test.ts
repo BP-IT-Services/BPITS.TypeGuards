@@ -548,5 +548,129 @@ describe('CommonTypeGuards', () => {
                 });
             });
         });
+
+        describe('Enum types with .nullable()', () => {
+            describe('memberOf', () => {
+                enum TestStringEnum {
+                    Red = 'red',
+                    Green = 'green',
+                    Blue = 'blue',
+                }
+
+                enum TestNumberEnum {
+                    Low = 1,
+                    Medium = 2,
+                    High = 3,
+                }
+
+                const TestObjectEnum = {
+                    Active: 'active',
+                    Inactive: 'inactive',
+                    Pending: 'pending',
+                } as const;
+                type TestObjectEnum = typeof TestObjectEnum[keyof typeof TestObjectEnum];
+
+                it('should validate string enum membership', () => {
+                    const guard = CommonTypeGuards.enums.memberOf(TestStringEnum);
+                    expect(guard('red')).to.be.true;
+                    expect(guard('green')).to.be.true;
+                    expect(guard('blue')).to.be.true;
+                    expect(guard('yellow')).to.be.false;
+                    expect(guard('')).to.be.false;
+                    expect(guard(null)).to.be.false;
+                    expect(guard(undefined)).to.be.false;
+                    expect(guard(123)).to.be.false;
+                });
+
+                it('should validate number enum membership', () => {
+                    const guard = CommonTypeGuards.enums.memberOf(TestNumberEnum);
+                    expect(guard('Low')).to.be.true;
+                    expect(guard(1)).to.be.true;
+                    expect(guard(2)).to.be.true;
+                    expect(guard(3)).to.be.true;
+                    expect(guard(4)).to.be.false;
+                    expect(guard(0)).to.be.false;
+                    expect(guard('1')).to.be.false;
+                    expect(guard(null)).to.be.false;
+                    expect(guard(undefined)).to.be.false;
+                });
+
+                it('should validate object enum membership', () => {
+                    const guard = CommonTypeGuards.enums.memberOf<TestObjectEnum>(TestObjectEnum);
+                    expect(guard('active')).to.be.true;
+                    expect(guard('inactive')).to.be.true;
+                    expect(guard('pending')).to.be.true;
+                    expect(guard('completed')).to.be.false;
+                    expect(guard('')).to.be.false;
+                    expect(guard(null)).to.be.false;
+                    expect(guard(undefined)).to.be.false;
+                });
+
+                it('should validate nullable enum membership with default nullish values', () => {
+                    const guard = CommonTypeGuards.enums.memberOf(TestStringEnum).nullable();
+                    expect(guard('red')).to.be.true;
+                    expect(guard('green')).to.be.true;
+                    expect(guard('blue')).to.be.true;
+                    expect(guard(null)).to.be.true;
+                    expect(guard(undefined)).to.be.true;
+                    expect(guard('yellow')).to.be.false;
+                });
+
+                it('should validate nullable enum membership with custom nullish values', () => {
+                    const guardNull = CommonTypeGuards.enums.memberOf(TestStringEnum).nullable(null);
+                    expect(guardNull('red')).to.be.true;
+                    expect(guardNull('green')).to.be.true;
+                    expect(guardNull(null)).to.be.true;
+                    expect(guardNull(undefined)).to.be.false; // not in allowed nullish values
+
+                    const guardUndefined = CommonTypeGuards.enums.memberOf(TestStringEnum).nullable(undefined);
+                    expect(guardUndefined('blue')).to.be.true;
+                    expect(guardUndefined(undefined)).to.be.true;
+                    expect(guardUndefined(null)).to.be.false; // not in allowed nullish values
+
+                    const guardBoth = CommonTypeGuards.enums.memberOf(TestStringEnum).nullable(null, undefined);
+                    expect(guardBoth('red')).to.be.true;
+                    expect(guardBoth(null)).to.be.true;
+                    expect(guardBoth(undefined)).to.be.true;
+                });
+
+                it('should work with mixed enum types', () => {
+                    enum MixedEnum {
+                        StringValue = 'string_value',
+                        NumberValue = 42,
+                        AnotherString = 'another',
+                    }
+
+                    const guard = CommonTypeGuards.enums.memberOf(MixedEnum);
+                    expect(guard('string_value')).to.be.true;
+                    expect(guard(42)).to.be.true;
+                    expect(guard('another')).to.be.true;
+                    expect(guard('not_in_enum')).to.be.false;
+                    expect(guard(43)).to.be.false;
+                });
+
+                it('should handle empty object', () => {
+                    const emptyEnum = {};
+                    const guard = CommonTypeGuards.enums.memberOf(emptyEnum);
+                    expect(guard('anything')).to.be.false;
+                    expect(guard(123)).to.be.false;
+                    expect(guard(null)).to.be.false;
+                    expect(guard(undefined)).to.be.false;
+                });
+
+                it('should handle duplicate values in enum', () => {
+                    enum DuplicateValueEnum {
+                        First = 'same',
+                        Second = 'same',
+                        Third = 'different',
+                    }
+
+                    const guard = CommonTypeGuards.enums.memberOf(DuplicateValueEnum);
+                    expect(guard('same')).to.be.true;
+                    expect(guard('different')).to.be.true;
+                    expect(guard('other')).to.be.false;
+                });
+            });
+        });
     });
 });
