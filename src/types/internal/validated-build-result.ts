@@ -1,5 +1,6 @@
 import { Nullish } from "./nullish";
 import { MissingPropertiesError } from "./missing-properties-error";
+import {TypeGuardPredicateWithNullable} from "../type-guard-predicate-with-nullable";
 
 /**
  * Return type for the `build` getter in StrictTypeGuardBuilder.
@@ -30,7 +31,7 @@ import { MissingPropertiesError } from "./missing-properties-error";
  *   .validateProperty('id', CommonTypeGuards.basics.string())
  *   .validateProperty('name', CommonTypeGuards.basics.string())
  *   .validateProperty('email', CommonTypeGuards.basics.string())
- *   .build; // Type: BuildResult-like object
+ *   .build(); // Type: BuildResult-like object
  *
  * const isUser = completeBuilder(); // ✅ Works - creates type guard
  * const isUserOrNull = completeBuilder.nullable(null); // ✅ Works - creates nullable variant
@@ -41,7 +42,7 @@ import { MissingPropertiesError } from "./missing-properties-error";
  *   .validateProperty('id', CommonTypeGuards.basics.string())
  *   .validateProperty('name', CommonTypeGuards.basics.string())
  *   // Missing 'email' property
- *   .build; // Type: MissingPropertiesError<"email">
+ *   .build(); // Type: MissingPropertiesError<"email">
  *
  * const badGuard = incompleteBuilder(); // ❌ Compile error: Cannot call MissingPropertiesError
  * // Error message: "Missing required properties: email"
@@ -54,7 +55,7 @@ import { MissingPropertiesError } from "./missing-properties-error";
  *     // Custom validation logic for entire object
  *     return typeof obj === 'object' && obj !== null && 'id' in obj;
  *   })
- *   .build; // Type: BuildResult-like object (all properties satisfied)
+ *   .build(); // Type: BuildResult-like object (all properties satisfied)
  *
  * const isValidUser = rootValidatedBuilder(); // ✅ Works
  * ```
@@ -66,7 +67,7 @@ export type ValidatedBuildResult<T, TValidated extends keyof T> = keyof T extend
          *
          * @returns A type guard function that returns true if the value is of type T
          */
-        (): (value: unknown) => value is T;
+        (): TypeGuardPredicateWithNullable<T>;
 
         /**
          * Creates a nullable type guard function that validates values of type T or specified nullish values.

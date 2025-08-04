@@ -1,4 +1,4 @@
-﻿import { TypeGuardPredicate } from "./types";
+﻿import {TypeGuardPredicate, TypeGuardPredicateWithNullable} from "./types";
 import { Nullish } from "./types/internal/nullish";
 import { CommonTypeGuards } from "./type-guards";
 import { BuildResult } from "./types/internal/build-result";
@@ -174,7 +174,7 @@ export class TypeGuardBuilder<T> {
      * - Shows warnings for validation failures (unless `TypeGuardBuilder.LogValueReceived = false`)
      * - Shows errors for properties with validation failures
      *
-     * **Nullable Variants**: Use `.build.nullable()` to create a type guard that also accepts null/undefined values.
+     * **Nullable Variants**: Use `.build().nullable()` to create a type guard that also accepts null/undefined values.
      *
      * @returns A BuildResult object containing both the main type guard creator and nullable variant methods
      *
@@ -191,7 +191,7 @@ export class TypeGuardBuilder<T> {
      *   .validateProperty('id', CommonTypeGuards.basics.string())
      *   .validateProperty('name', CommonTypeGuards.basics.string())
      *   // email is optional - no validation required
-     *   .build; // Returns BuildResult<User>
+     *   .build(); // Returns BuildResult<User>
      *
      * // Create the standard type guard
      * const isUser = userBuilder(); // (value: unknown) => value is User
@@ -228,14 +228,27 @@ export class TypeGuardBuilder<T> {
      *   .validateRoot((obj): obj is User => {
      *     return typeof obj === 'object' && obj !== null && 'id' in obj && 'name' in obj;
      *   })
-     *   .build;
+     *   .build();
      *
      * const isValidUser = rootValidatedBuilder();
      * const isValidUserOrNull = rootValidatedBuilder.nullable(null);
      * ```
      */
     public get build(): BuildResult<T> {
-        const baseGuard = this.buildTypeGuard();
+        const baseGuard = this.buildTypeGuard() as TypeGuardPredicateWithNullable<T>;
+        baseGuard.nullable = <TNull extends Nullish = null | undefined>(...nullishValues: TNull[]) => {
+            return (obj: unknown): obj is T | TNull => {
+                if (obj === null || obj === undefined) {
+                    return CommonTypeGuards.basics.nullish(obj, ...nullishValues);
+                }
+
+                return baseGuard(obj);
+            };
+        };
+        
+        
+            
+            
         const mainFunction = () => baseGuard;
         mainFunction.nullable = <TNull extends Nullish = null | undefined>(...nullishValues: TNull[]) => {
             return (obj: unknown): obj is T | TNull => {

@@ -41,7 +41,7 @@ describe('StrictTypeGuardBuilder', () => {
                 .start<SimpleUser>('SimpleUser')
                 .validateProperty('id', CommonTypeGuards.basics.number())
                 .validateProperty('username', CommonTypeGuards.basics.string())
-                .build.nullable();
+                .build().nullable();
 
             expect(guard(null)).to.be.true;
             expect(guard(undefined)).to.be.true;

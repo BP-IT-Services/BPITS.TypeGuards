@@ -1,4 +1,5 @@
 import { Nullish } from "./nullish";
+import {TypeGuardPredicateWithNullable} from "../type-guard-predicate-with-nullable";
 
 /**
  * Return type for the `build` getter in TypeGuardBuilder.
@@ -20,7 +21,7 @@ import { Nullish } from "./nullish";
  *   .start<User>('User')
  *   .validateProperty('id', CommonTypeGuards.basics.string())
  *   .validateProperty('name', CommonTypeGuards.basics.string())
- *   .build; // This returns a BuildResult<User>
+ *   .build(); // This returns a BuildResult<User>
  *
  * // Create a standard type guard
  * const isUser = builder(); // (value: unknown) => value is User
@@ -50,7 +51,7 @@ export type BuildResult<T> = {
      *
      * @returns A type guard function that returns true if the value is of type T
      */
-    (): (value: unknown) => value is T;
+    (): TypeGuardPredicateWithNullable<T>;
 
     /**
      * Creates a nullable type guard function that validates values of type T or specified nullish values.
@@ -63,7 +64,7 @@ export type BuildResult<T> = {
      * ```typescript
      * const builder = TypeGuardBuilder.start<string>('string')
      *   .validateRoot(CommonTypeGuards.basics.string())
-     *   .build;
+     *   .build();
      *
      * // Allow string, null, and undefined
      * const stringOrNullish = builder.nullable();

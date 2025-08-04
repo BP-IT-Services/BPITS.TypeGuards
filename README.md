@@ -321,7 +321,7 @@ const isUserOrNull = StrictTypeGuardBuilder
   .validateProperty('id', CommonTypeGuards.basics.string())
   .validateProperty('name', CommonTypeGuards.basics.string())
   .validateProperty('email', CommonTypeGuards.basics.string())
-  .build.nullable(); // Returns (obj: unknown) => obj is User | null | undefined
+  .build().nullable(); // Returns (obj: unknown) => obj is User | null | undefined
 
 // Or be more specific about which nullish values to allow
 const isUserOrJustNull = StrictTypeGuardBuilder
@@ -329,7 +329,7 @@ const isUserOrJustNull = StrictTypeGuardBuilder
   .validateProperty('id', CommonTypeGuards.basics.string())
   .validateProperty('name', CommonTypeGuards.basics.string())
   .validateProperty('email', CommonTypeGuards.basics.string())
-  .build.nullable(null); // Returns (obj: unknown) => obj is User | null
+  .build().nullable(null); // Returns (obj: unknown) => obj is User | null
 ```
 
 ## TypeGuardBuilder vs StrictTypeGuardBuilder
@@ -341,9 +341,9 @@ This library provides two builders:
 - **Type safety**: Prevents you from forgetting to validate properties
 - **Better developer experience**: Clear error messages guide you to missing validations
 
-**Important**: When using `StrictTypeGuardBuilder`, you **must** validate or ignore all properties before calling `build()` or `build.nullable()`. If you don't, TypeScript will show a compile error indicating which properties are missing validation.
+**Important**: When using `StrictTypeGuardBuilder`, you **must** validate or ignore all properties before calling `build()` or `build().nullable()`. If you don't, TypeScript will show a compile error indicating which properties are missing validation.
 
-**Exception**: If you call `validateRoot()`, it assumes the entire object structure will be validated at the root level, allowing you to call `build()` or `build.nullable()` immediately without validating individual properties.
+**Exception**: If you call `validateRoot()`, it assumes the entire object structure will be validated at the root level, allowing you to call `build()` or `build().nullable()` immediately without validating individual properties.
 
 ### TypeGuardBuilder
 - **More flexible**: Allows partial property validation

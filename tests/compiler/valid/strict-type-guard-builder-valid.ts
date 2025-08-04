@@ -28,14 +28,14 @@ const userGuardThree = StrictTypeGuardBuilder
 const userGuardFour = StrictTypeGuardBuilder
     .start<User>('User')
     .validateRoot((obj: unknown): obj is User => true)
-    .build.nullable();
+    .build().nullable();
 
 const userGuardFive = StrictTypeGuardBuilder
     .start<User>('User')
     .validateRoot((obj: unknown): obj is User => true)
-    .build.nullable(null);
+    .build().nullable(null);
 
 const userGuardSix = StrictTypeGuardBuilder
     .start<User>('User')
     .validateRoot((obj: unknown): obj is User => true)
-    .build.nullable(null, undefined);
+    .build().nullable(null, undefined);

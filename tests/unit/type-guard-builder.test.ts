@@ -184,12 +184,25 @@ describe('TypeGuardBuilder', () => {
     });
 
     describe('Nullable builders', () => {
-        it('should create nullable type guards', () => {
+        it('V1 should create nullable type guards', () => {
             const guard = TypeGuardBuilder
                 .start<SimpleUser>('SimpleUser')
                 .validateProperty('id', CommonTypeGuards.basics.number())
                 .validateProperty('username', CommonTypeGuards.basics.string())
                 .build.nullable();
+
+            expect(guard(null)).to.be.true;
+            expect(guard(undefined)).to.be.true;
+            expect(guard({ id: 1, username: 'test' })).to.be.true;
+            expect(guard({ id: 'invalid', username: 'test' })).to.be.false;
+        });
+        
+        it('V2 should create nullable type guards', () => {
+            const guard = TypeGuardBuilder
+                .start<SimpleUser>('SimpleUser')
+                .validateProperty('id', CommonTypeGuards.basics.number())
+                .validateProperty('username', CommonTypeGuards.basics.string())
+                .build().nullable();
 
             expect(guard(null)).to.be.true;
             expect(guard(undefined)).to.be.true;

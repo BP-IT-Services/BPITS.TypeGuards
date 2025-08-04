@@ -2,7 +2,7 @@
  * Type representing a compilation error when required properties are missing validation.
  *
  * This type is used by the TypeScript compiler to provide helpful error messages
- * when `StrictTypeGuardBuilder.build()` or `StrictTypeGuardBuilder.build.nullable()`
+ * when `StrictTypeGuardBuilder.build()` or `StrictTypeGuardBuilder.build().nullable()`
  * are called without validating all required properties.
  *
  * @template TMissing Union type of property keys that are missing validation

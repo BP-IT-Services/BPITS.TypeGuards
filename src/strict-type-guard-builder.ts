@@ -175,7 +175,7 @@ export class StrictTypeGuardBuilder<T, TValidated extends keyof T = never> {
      * - Shows warnings for validation failures (unless `TypeGuardBuilder.LogValueReceived = false`)
      * - Shows errors for properties with validation failures
      *
-     * **Nullable Variants**: Use `.build.nullable()` to create a type guard that also accepts null/undefined values.
+     * **Nullable Variants**: Use `.build().nullable()` to create a type guard that also accepts null/undefined values.
      *
      * @returns A callable type guard function with optional nullable variant, or a compile error if properties are missing validation
      *
