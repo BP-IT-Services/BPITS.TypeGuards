@@ -1,6 +1,8 @@
 import { spawnSync } from 'child_process';
 import { existsSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs';
 import { join, relative } from 'path';
+import {fileURLToPath} from "node:url";
+import * as path from "node:path";
 
 interface TestResult {
     file: string;
@@ -12,7 +14,9 @@ interface TestResult {
 class CompilerTestRunner {
     private readonly _debugMode = false;
 
-    private readonly testDir = __dirname;
+    private readonly __scriptFilePath = fileURLToPath(import.meta.url); // get the resolved path to the file
+    private readonly __scriptDirectoryPath = path.dirname(this.__scriptFilePath); // get the name of the directory
+    private readonly testDir = this.__scriptDirectoryPath;
     private readonly baseTsConfigPath = join(process.cwd(), 'tsconfig.test-compiler.json');
 
     runTests(): void {
