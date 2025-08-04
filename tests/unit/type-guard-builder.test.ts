@@ -1,5 +1,5 @@
 ﻿import {afterEach, beforeEach, describe, it} from "mocha";
-import {CommonTypeGuards, TypeGuardBuilder} from "../../src";
+import {CommonTypeGuards, TypeGuardBuilder} from "./imports";
 import {expect} from "chai";
 import {Person, SimpleUser} from "./models/test-models";
 

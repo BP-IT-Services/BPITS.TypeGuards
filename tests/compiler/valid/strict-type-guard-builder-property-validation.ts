@@ -1,4 +1,4 @@
-import { StrictTypeGuardBuilder } from "@bpits/type-guards";
+import { StrictTypeGuardBuilder } from '../imports';
 
 type User = {
     name: string;
@@ -6,16 +6,16 @@ type User = {
     email?: string;
 }
 
-const missingPropertiesOne = StrictTypeGuardBuilder
+const guardWithIgnoredOptionalProperty = StrictTypeGuardBuilder
     .start<User>('User')
+    .validateProperty('name', (obj: unknown): obj is string => typeof obj === 'string')
     .validateProperty('age', (obj: unknown): obj is number => typeof obj === 'number')
     .ignoreProperty('email')
     .build();
 
-
-const missingPropertiesTwo = StrictTypeGuardBuilder
+const guardWithValidatedOptionalProperty = StrictTypeGuardBuilder
     .start<User>('User')
     .validateProperty('name', (obj: unknown): obj is string => typeof obj === 'string')
+    .validateProperty('age', (obj: unknown): obj is number => typeof obj === 'number')
     .validateProperty('email', (obj: unknown): obj is string | undefined => obj === undefined || typeof obj === 'string')
-    .build().nullable();
-
+    .build();

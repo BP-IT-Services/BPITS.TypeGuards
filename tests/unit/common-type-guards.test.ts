@@ -1,6 +1,6 @@
 ﻿import {describe, it} from "mocha";
 import {expect} from "chai";
-import {CommonTypeGuards} from "../../src";
+import {CommonTypeGuards} from "./imports";
 
 describe('CommonTypeGuards', () => {
     describe('Basic type guards', () => {

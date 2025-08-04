@@ -1,5 +1,5 @@
 ﻿import {describe, it} from "mocha";
-import {CommonTypeGuards, StrictTypeGuardBuilder} from "../../src";
+import {CommonTypeGuards, StrictTypeGuardBuilder} from "./imports";
 import {expect} from "chai";
 import {OptionalFieldsTest, SimpleUser} from "./models/test-models";
 

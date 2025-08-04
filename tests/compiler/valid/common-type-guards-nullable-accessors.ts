@@ -1,13 +1,13 @@
-import { CommonTypeGuards } from "../../../src";
+import { CommonTypeGuards } from "../imports";
 
-const oldNullableAccessors = [
+const deprecatedNullableAccessors = [
     CommonTypeGuards.basics.string.nullable(),
     CommonTypeGuards.basics.number.nullable(),
     CommonTypeGuards.basics.boolean.nullable(),
     CommonTypeGuards.basics.object.nullable(),
 ];
 
-const newNullableAccessors = [
+const currentNullableAccessors = [
     CommonTypeGuards.basics.string().nullable(),
     CommonTypeGuards.basics.number().nullable(),
     CommonTypeGuards.basics.boolean().nullable(),

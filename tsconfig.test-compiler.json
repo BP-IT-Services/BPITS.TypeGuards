@@ -2,10 +2,6 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "baseUrl": "./",
-    "paths": {
-      "@bpits/type-guards": ["./src/index"],
-      "@bpits/type-guards/*": ["./src/*"]
-    },
     "moduleResolution": "node",
     "noEmit": true
   },
