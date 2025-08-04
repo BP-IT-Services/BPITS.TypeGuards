@@ -247,5 +247,70 @@ describe('TypeGuardBuilder', () => {
             guard({ id: 'invalid', username: 'test' });
             expect(consoleWarnCalls.some(call => call.includes('Validation failed for property \'id\''))).to.be.true;
         });
+
+        describe('suppressMissingValidatorWarnings', () => {
+            it('should suppress all missing validator warnings when called with no arguments', () => {
+                const guard = TypeGuardBuilder
+                    .start<SimpleUser>('SimpleUser')
+                    .suppressMissingValidatorWarnings() // Suppress all warnings
+                    .validateProperty('id', CommonTypeGuards.basics.number())
+                    .build();
+
+                // This object has 'username' property without validator, but warnings should be suppressed
+                guard({ id: 1, username: 'test', extraProp: 'value' });
+                
+                // Should not have any "No validator specified" warnings
+                expect(consoleWarnCalls.some(call => call.includes('No validator specified'))).to.be.false;
+                expect(consoleWarnCalls.length).to.equal(0);
+            });
+
+            it('should suppress missing validator warnings for specific properties only', () => {
+                const guard = TypeGuardBuilder
+                    .start<SimpleUser>('SimpleUser')
+                    .suppressMissingValidatorWarnings('username', 'extraProp') // Only suppress these specific properties
+                    .validateProperty('id', CommonTypeGuards.basics.number())
+                    .build();
+
+                // This object has suppressed properties and one non-suppressed property
+                guard({ id: 1, username: 'test', extraProp: 'value', anotherProp: 'should warn' });
+                
+                // Should not warn about 'username' or 'extraProp' but should warn about 'anotherProp'
+                expect(consoleWarnCalls.some(call => call.includes('No validator specified for property \'username\''))).to.be.false;
+                expect(consoleWarnCalls.some(call => call.includes('No validator specified for property \'extraProp\''))).to.be.false;
+                expect(consoleWarnCalls.some(call => call.includes('No validator specified for property \'anotherProp\''))).to.be.true;
+            });
+
+            it('should still show validation failure warnings even when missing validator warnings are suppressed', () => {
+                const guard = TypeGuardBuilder
+                    .start<SimpleUser>('SimpleUser')
+                    .suppressMissingValidatorWarnings() // Suppress missing validator warnings
+                    .validateProperty('id', CommonTypeGuards.basics.number())
+                    .validateProperty('username', CommonTypeGuards.basics.string())
+                    .build();
+
+                // This should still show validation failure warnings
+                guard({ id: 'invalid', username: 123, extraProp: 'value' });
+                
+                // Should have validation failure warnings but no missing validator warnings
+                expect(consoleWarnCalls.some(call => call.includes("Validation failed for property 'id'"))).to.be.true;
+            });
+
+            it('should work with PropertyKey types (symbols and numbers)', () => {
+                const guard = TypeGuardBuilder
+                    .start<any>('TestType')
+                    .suppressMissingValidatorWarnings(123, 'stringKey') // Suppress number and string keys
+                    .validateProperty('id', CommonTypeGuards.basics.number())
+                    .build();
+
+                const testObj = { id: 1, 123: 'number key', stringKey: 'string key', otherKey: 'should warn' };
+                guard(testObj);
+                
+                // Should not warn about numeric key '123' or 'stringKey'
+                expect(consoleWarnCalls.some(call => call.includes('No validator specified for property \'123\''))).to.be.false;
+                expect(consoleWarnCalls.some(call => call.includes('No validator specified for property \'stringKey\''))).to.be.false;
+                // Should warn about 'otherKey'
+                expect(consoleWarnCalls.some(call => call.includes('No validator specified for property \'otherKey\''))).to.be.true;
+            });
+        });
     });
 });

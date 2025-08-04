@@ -159,6 +159,58 @@ export class StrictTypeGuardBuilder<T, TValidated extends keyof T = never> {
     }
 
     /**
+     * Suppresses missing validator warnings for this type guard builder.
+     * 
+     * This method only suppresses "No validator specified for property..." warnings.
+     * Validation failure warnings (e.g., "Validation failed for property...") are still shown.
+     * 
+     * - When called with no arguments, suppresses ALL missing validator warnings
+     * - When called with property names, suppresses missing validator warnings only for those specific properties
+     *
+     * Use this when working with APIs that return extra properties you don't control.
+     * The validation will still work correctly - it just won't warn about missing validators
+     * for properties you don't care about.
+     *
+     * @param properties Optional property names to suppress missing validator warnings for. If empty, suppresses all missing validator warnings.
+     * @returns This builder instance for method chaining
+     *
+     * @example
+     * ```typescript
+     * interface User {
+     *   id: string;
+     *   name: string;
+     * }
+     *
+     * // Suppress all missing validator warnings
+     * const isUserNoWarnings = StrictTypeGuardBuilder
+     *   .start<User>('User')
+     *   .suppressMissingValidatorWarnings() // No "missing validator" warnings for any properties
+     *   .validateProperty('id', CommonTypeGuards.basics.string())
+     *   .validateProperty('name', CommonTypeGuards.basics.string())
+     *   .build();
+     *
+     * // API returns { id: "1", name: "John", _internal: "xyz", created_at: "2023-01-01" }
+     * // Suppress missing validator warnings only for specific extra properties
+     * const isUserSpecific = StrictTypeGuardBuilder
+     *   .start<User>('User')
+     *   .suppressMissingValidatorWarnings('_internal', 'created_at') // Only suppress these
+     *   .validateProperty('id', CommonTypeGuards.basics.string())
+     *   .validateProperty('name', CommonTypeGuards.basics.string())
+     *   .build();
+     *
+     * // Validation failure warnings are still shown:
+     * const userGuard = isUserSpecific();
+     * userGuard({ id: 123, name: "John", _internal: "xyz" }); 
+     * // Will still warn: "Validation failed for property 'id'" (because 123 is not a string)
+     * // Will NOT warn about '_internal' missing validator
+     * ```
+     */
+    public suppressMissingValidatorWarnings(...properties: (keyof T | PropertyKey)[]): this {
+        this._internalBuilder.suppressMissingValidatorWarnings(...properties);
+        return this;
+    }
+
+    /**
      * Build a type guard using the provided validators.
      *
      * **Compile-time Safety**: This method can only be called when one of these conditions is met:

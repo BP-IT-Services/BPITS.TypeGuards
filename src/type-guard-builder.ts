@@ -1,4 +1,4 @@
-﻿import {TypeGuardPredicate, TypeGuardPredicateWithNullable} from "./types";
+﻿import { TypeGuardPredicate, TypeGuardPredicateWithNullable } from "./types";
 import { Nullish } from "./types/internal/nullish";
 import { CommonTypeGuards } from "./type-guards";
 import { BuildResult } from "./types/internal/build-result";
@@ -55,6 +55,8 @@ export class TypeGuardBuilder<T> {
 
     private _rootValidators: Array<(obj: unknown) => obj is T> = [];
     private _validators = new Map<keyof T, Array<(obj: unknown) => obj is T[keyof T]>>();
+    private _suppressAllMissingValidatorWarnings: boolean = false;
+    private _suppressedMissingValidatorWarningProperties = new Set<string>();
 
     /**
      * Creates a new TypeGuardBuilder instance.
@@ -165,6 +167,66 @@ export class TypeGuardBuilder<T> {
     }
 
     /**
+     * Suppresses missing validator warnings for this type guard builder.
+     *
+     * This method only suppresses "No validator specified for property..." warnings.
+     * Validation failure warnings (e.g., "Validation failed for property...") are still shown.
+     *
+     * - When called with no arguments, suppresses ALL missing validator warnings
+     * - When called with property names, suppresses missing validator warnings only for those specific properties
+     *
+     * Use this when working with APIs that return extra properties you don't control.
+     * The validation will still work correctly - it just won't warn about missing validators
+     * for properties you don't care about.
+     *
+     * @param properties Optional property names to suppress missing validator warnings for. If empty, suppresses all missing validator warnings.
+     * @returns This builder instance for method chaining
+     *
+     * @example
+     * ```typescript
+     * interface User {
+     *   id: string;
+     *   name: string;
+     * }
+     *
+     * // Suppress all missing validator warnings
+     * const isUserNoWarnings = TypeGuardBuilder
+     *   .start<User>('User')
+     *   .suppressMissingValidatorWarnings() // No "missing validator" warnings for any properties
+     *   .validateProperty('id', CommonTypeGuards.basics.string())
+     *   .validateProperty('name', CommonTypeGuards.basics.string())
+     *   .build();
+     *
+     * // API returns { id: "1", name: "John", _internal: "xyz", created_at: "2023-01-01" }
+     * // Suppress missing validator warnings only for specific extra properties
+     * const isUserSpecific = TypeGuardBuilder
+     *   .start<User>('User')
+     *   .suppressMissingValidatorWarnings('_internal', 'created_at') // Only suppress these
+     *   .validateProperty('id', CommonTypeGuards.basics.string())
+     *   .validateProperty('name', CommonTypeGuards.basics.string())
+     *   .build();
+     *
+     * // Validation failure warnings are still shown:
+     * isUserSpecific({ id: 123, name: "John", _internal: "xyz" }); 
+     * // Will still warn: "Validation failed for property 'id'" (because 123 is not a string)
+     * // Will NOT warn about '_internal' missing validator
+     * ```
+     */
+    public suppressMissingValidatorWarnings(...properties: (keyof T | PropertyKey)[]): this {
+        if (properties.length === 0) {
+            this._suppressAllMissingValidatorWarnings = true;
+            return this;
+        }
+
+        for (const property of properties) {
+            // Convert to string since Object.keys() returns string keys
+            this._suppressedMissingValidatorWarningProperties.add(String(property));
+        }
+
+        return this;
+    }
+
+    /**
      * Build a type guard using the provided validators.
      *
      * **Runtime Behavior**:
@@ -245,10 +307,8 @@ export class TypeGuardBuilder<T> {
                 return baseGuard(obj);
             };
         };
-        
-        
-            
-            
+
+
         const mainFunction = () => baseGuard;
         mainFunction.nullable = <TNull extends Nullish = null | undefined>(...nullishValues: TNull[]) => {
             return (obj: unknown): obj is T | TNull => {
@@ -302,7 +362,7 @@ export class TypeGuardBuilder<T> {
                 return false;
 
             if (!this._rootValidators.every(v => v(obj))) {
-                console.warn(`Validation failed for root object '${this._rootTypeName}'. Value received:`, this.sanitiseValueReceived(obj));
+                console.warn(`Validation failed for root object in '${this._rootTypeName}'. Value received:`, this.sanitiseValueReceived(obj));
                 return false;
             }
 
@@ -312,8 +372,8 @@ export class TypeGuardBuilder<T> {
             for (const key of objKeys) {
                 const keyValidator = this._validators.get(key);
                 if (!keyValidator) {
-                    if (!hasRootValidator) {
-                        // Only show console warnings if a root validator wasn't supplied
+                    if (!hasRootValidator && !this._suppressAllMissingValidatorWarnings && !this._suppressedMissingValidatorWarningProperties.has(key.toString())) {
+                        // Only show console warnings if a root validator wasn't supplied and warnings aren't suppressed
                         console.warn(`No validator specified for property '${key.toString()}' in '${this._rootTypeName}'`);
                     }
 
