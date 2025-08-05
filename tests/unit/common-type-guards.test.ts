@@ -671,6 +671,179 @@ describe('CommonTypeGuards', () => {
                     expect(guard('other')).to.be.false;
                 });
             });
+
+            describe('keyOf', () => {
+                enum TestStringEnum {
+                    Red = 'red',
+                    Green = 'green',
+                    Blue = 'blue',
+                }
+
+                enum TestNumberEnum {
+                    Low = 1,
+                    Medium = 2,
+                    High = 3,
+                }
+
+                const TestObjectEnum = {
+                    Active: 'active',
+                    Inactive: 'inactive',
+                    Pending: 'pending',
+                } as const;
+
+                it('should validate string enum keys', () => {
+                    const guard = CommonTypeGuards.enums.keyOf(TestStringEnum);
+                    expect(guard('Red')).to.be.true;
+                    expect(guard('Green')).to.be.true;
+                    expect(guard('Blue')).to.be.true;
+                    expect(guard('red')).to.be.false; // value, not key
+                    expect(guard('Yellow')).to.be.false;
+                    expect(guard('')).to.be.false;
+                    expect(guard(null)).to.be.false;
+                    expect(guard(undefined)).to.be.false;
+                    expect(guard(123)).to.be.false;
+                });
+
+                it('should validate number enum keys', () => {
+                    const guard = CommonTypeGuards.enums.keyOf(TestNumberEnum);
+                    expect(guard('Low')).to.be.true;
+                    expect(guard('Medium')).to.be.true;
+                    expect(guard('High')).to.be.true;
+                    expect(guard('1')).to.be.true; // numeric enum reverse mapping creates string keys
+                    expect(guard('2')).to.be.true; // numeric enum reverse mapping creates string keys  
+                    expect(guard('3')).to.be.true; // numeric enum reverse mapping creates string keys
+                    expect(guard(1)).to.be.false; // number, not string key
+                    expect(guard(2)).to.be.false; // number, not string key
+                    expect(guard(3)).to.be.false; // number, not string key
+                    expect(guard('Higher')).to.be.false;
+                    expect(guard('4')).to.be.false;
+                    expect(guard('')).to.be.false;
+                    expect(guard(null)).to.be.false;
+                    expect(guard(undefined)).to.be.false;
+                });
+
+                it('should validate object enum keys', () => {
+                    const guard = CommonTypeGuards.enums.keyOf(TestObjectEnum);
+                    expect(guard('Active')).to.be.true;
+                    expect(guard('Inactive')).to.be.true;
+                    expect(guard('Pending')).to.be.true;
+                    expect(guard('active')).to.be.false; // value, not key
+                    expect(guard('Completed')).to.be.false;
+                    expect(guard('')).to.be.false;
+                    expect(guard(null)).to.be.false;
+                    expect(guard(undefined)).to.be.false;
+                });
+
+                it('should validate nullable enum keys with default nullish values', () => {
+                    const guard = CommonTypeGuards.enums.keyOf(TestStringEnum).nullable();
+                    expect(guard('Red')).to.be.true;
+                    expect(guard('Green')).to.be.true;
+                    expect(guard('Blue')).to.be.true;
+                    expect(guard(null)).to.be.true;
+                    expect(guard(undefined)).to.be.true;
+                    expect(guard('red')).to.be.false; // value, not key
+                    expect(guard('Yellow')).to.be.false;
+                });
+
+                it('should validate nullable enum keys with custom nullish values', () => {
+                    const guardNull = CommonTypeGuards.enums.keyOf(TestStringEnum).nullable(null);
+                    expect(guardNull('Red')).to.be.true;
+                    expect(guardNull('Green')).to.be.true;
+                    expect(guardNull(null)).to.be.true;
+                    expect(guardNull(undefined)).to.be.false; // not in allowed nullish values
+
+                    const guardUndefined = CommonTypeGuards.enums.keyOf(TestStringEnum).nullable(undefined);
+                    expect(guardUndefined('Blue')).to.be.true;
+                    expect(guardUndefined(undefined)).to.be.true;
+                    expect(guardUndefined(null)).to.be.false; // not in allowed nullish values
+
+                    const guardBoth = CommonTypeGuards.enums.keyOf(TestStringEnum).nullable(null, undefined);
+                    expect(guardBoth('Red')).to.be.true;
+                    expect(guardBoth(null)).to.be.true;
+                    expect(guardBoth(undefined)).to.be.true;
+                });
+
+                it('should work with mixed enum types', () => {
+                    enum MixedEnum {
+                        StringValue = 'string_value',
+                        NumberValue = 42,
+                        AnotherString = 'another',
+                    }
+
+                    const guard = CommonTypeGuards.enums.keyOf(MixedEnum);
+                    expect(guard('StringValue')).to.be.true;
+                    expect(guard('NumberValue')).to.be.true;
+                    expect(guard('AnotherString')).to.be.true;
+                    expect(guard('42')).to.be.true; // numeric enum values create reverse mapping keys
+                    expect(guard('string_value')).to.be.false; // string value, not key (no reverse mapping for strings)
+                    expect(guard(42)).to.be.false; // number, not string key
+                    expect(guard('NotInEnum')).to.be.false;
+                });
+
+                it('should handle empty object', () => {
+                    const emptyEnum = {};
+                    const guard = CommonTypeGuards.enums.keyOf(emptyEnum);
+                    expect(guard('anything')).to.be.false;
+                    expect(guard('')).to.be.false;
+                    expect(guard(null)).to.be.false;
+                    expect(guard(undefined)).to.be.false;
+                });
+
+                it('should handle plain objects', () => {
+                    const plainObject = {
+                        key1: 'value1',
+                        key2: 'value2',
+                        key3: 123,
+                    };
+
+                    const guard = CommonTypeGuards.enums.keyOf(plainObject);
+                    expect(guard('key1')).to.be.true;
+                    expect(guard('key2')).to.be.true;
+                    expect(guard('key3')).to.be.true;
+                    expect(guard('value1')).to.be.false; // value, not key
+                    expect(guard('value2')).to.be.false; // value, not key
+                    expect(guard(123)).to.be.false; // value, not key
+                    expect(guard('key4')).to.be.false;
+                });
+
+                it('should handle numeric keys', () => {
+                    const numericKeysObject = {
+                        0: 'zero',
+                        1: 'one',
+                        2: 'two',
+                    };
+
+                    const guard = CommonTypeGuards.enums.keyOf(numericKeysObject);
+                    expect(guard('0')).to.be.true;
+                    expect(guard('1')).to.be.true;
+                    expect(guard('2')).to.be.true;
+                    expect(guard(0)).to.be.false; // number, but keys are strings
+                    expect(guard(1)).to.be.false; // number, but keys are strings
+                    expect(guard('3')).to.be.false;
+                });
+
+                it('should differentiate between memberOf and keyOf', () => {
+                    enum TestEnum {
+                        First = 'first_value',
+                        Second = 'second_value',
+                    }
+
+                    const memberOfGuard = CommonTypeGuards.enums.memberOf(TestEnum);
+                    const keyOfGuard = CommonTypeGuards.enums.keyOf(TestEnum);
+
+                    // memberOf should validate values
+                    expect(memberOfGuard('first_value')).to.be.true;
+                    expect(memberOfGuard('second_value')).to.be.true;
+                    expect(memberOfGuard('First')).to.be.false;
+                    expect(memberOfGuard('Second')).to.be.false;
+
+                    // keyOf should validate keys
+                    expect(keyOfGuard('First')).to.be.true;
+                    expect(keyOfGuard('Second')).to.be.true;
+                    expect(keyOfGuard('first_value')).to.be.false;
+                    expect(keyOfGuard('second_value')).to.be.false;
+                });
+            });
         });
     });
 });

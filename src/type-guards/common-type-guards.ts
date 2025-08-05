@@ -715,20 +715,27 @@ export abstract class CommonTypeGuards {
      * ```typescript
      * enum Color { Red = 'red', Green = 'green', Blue = 'blue' }
      * 
-     * // Validate enum membership
-     * const isColor = CommonTypeGuards.enums.memberOf(Color);
+     * // Validate enum membership (values)
+     * const isColor = CommonTypeGuards.enums.keyOf(Color);
      * if (isColor(value)) {
      *   // value is now typed as Color
      * }
      * 
+     * // Validate enum key membership (keys)
+     * const isColorKey = CommonTypeGuards.enums.keyOf(Color);
+     * if (isColorKey(key)) {
+     *   // key is now typed as keyof typeof Color
+     * }
+     * 
      * // With nullable variants
-     * const isColorOrNull = CommonTypeGuards.enums.memberOf(Color).nullable(null);
+     * const isColorOrNull = CommonTypeGuards.enums.keyOf(Color).nullable(null);
+     * const isColorKeyOrNull = CommonTypeGuards.enums.keyOf(Color).nullable(null);
      * ```
      */
     public static enums = {
         /**
          * Creates a type guard that validates whether a value is a member of an enum or object.
-         * 
+         *
          * This function works with both numeric and string enums, as well as plain objects.
          * It checks if the input value matches any of the values in the provided enum/object.
          *
@@ -739,40 +746,96 @@ export abstract class CommonTypeGuards {
          * @example
          * ```typescript
          * // String enum
-         * enum Status { 
-         *   Active = 'active', 
-         *   Inactive = 'inactive', 
-         *   Pending = 'pending' 
+         * enum Status {
+         *   Active = 'active',
+         *   Inactive = 'inactive',
+         *   Pending = 'pending'
          * }
          * const isStatus = CommonTypeGuards.enums.memberOf(Status);
-         * 
+         *
          * // Numeric enum
          * enum Priority { Low = 1, Medium = 2, High = 3 }
          * const isPriority = CommonTypeGuards.enums.memberOf(Priority);
-         * 
+         *
          * // Plain object (acts like enum)
          * const Colors = { Red: 'red', Green: 'green', Blue: 'blue' } as const;
          * type Color = typeof Colors[keyof typeof Colors];
          * const isColor = CommonTypeGuards.enums.memberOf<Color>(Colors);
-         * 
+         *
          * // Usage
          * if (isStatus('active')) {
          *   // value is now typed as Status
          *   console.log('Status is valid');
          * }
-         * 
+         *
          * // With nullable variants
          * const isStatusOrNull = CommonTypeGuards.enums.memberOf(Status).nullable(null);
          * const isStatusOrUndefined = CommonTypeGuards.enums.memberOf(Status).nullable(undefined);
          * ```
          */
-        memberOf: <T>(enumObject: Record<string | number, T>): TypeGuardPredicateWithNullable<T> => {
+        memberOf: <T>(enumObject: Record<string | number, T>): TypeGuardPredicateWithNullable<T[keyof T]> => {
             const enumValues = Object.values(enumObject);
-            const baseGuard = (obj: unknown): obj is T => {
+            const baseGuard = (obj: unknown): obj is T[keyof T] => {
                 return enumValues.includes(obj as T);
             };
 
-            const nullableGuard = baseGuard as TypeGuardPredicateWithNullable<T>;
+            const nullableGuard = baseGuard as TypeGuardPredicateWithNullable<T[keyof T]>;
+            nullableGuard.nullable = CommonTypeGuards.makeNullableFunction(baseGuard);
+
+            return nullableGuard;
+        },
+
+        /**
+         * Creates a type guard that validates whether a value is a key of an enum or object.
+         * 
+         * This function works with both numeric and string enums, as well as plain objects.
+         * It checks if the input value matches any of the keys in the provided enum/object.
+         *
+         * @template T The enum or object type to validate keys against
+         * @param enumObject The enum or object to check key membership against
+         * @returns A type guard function for enum/object key validation with nullable support
+         *
+         * @example
+         * ```typescript
+         * // String enum
+         * enum Status { 
+         *   Active = 'active', 
+         *   Inactive = 'inactive', 
+         *   Pending = 'pending' 
+         * }
+         * const isStatusKey = CommonTypeGuards.enums.keyOf(Status);
+         * 
+         * // Numeric enum
+         * enum Priority { Low = 1, Medium = 2, High = 3 }
+         * const isPriorityKey = CommonTypeGuards.enums.keyOf(Priority);
+         * 
+         * // Plain object (acts like enum)
+         * const Colors = { Red: 'red', Green: 'green', Blue: 'blue' } as const;
+         * const isColorKey = CommonTypeGuards.enums.keyOf(Colors);
+         * 
+         * // Usage
+         * if (isStatusKey('Active')) {
+         *   // value is now typed as keyof typeof Status
+         *   console.log('Key is valid');
+         * }
+         * 
+         * if (isPriorityKey('Low')) {
+         *   // value is now typed as keyof typeof Priority
+         *   console.log('Priority key is valid');
+         * }
+         * 
+         * // With nullable variants
+         * const isStatusKeyOrNull = CommonTypeGuards.enums.keyOf(Status).nullable(null);
+         * const isStatusKeyOrUndefined = CommonTypeGuards.enums.keyOf(Status).nullable(undefined);
+         * ```
+         */
+        keyOf: <T extends object>(enumObject: T): TypeGuardPredicateWithNullable<keyof T> => {
+            const enumKeys = Object.keys(enumObject);
+            const baseGuard = (obj: unknown): obj is keyof T => {
+                return typeof obj === 'string' && enumKeys.includes(obj);
+            };
+
+            const nullableGuard = baseGuard as TypeGuardPredicateWithNullable<keyof T>;
             nullableGuard.nullable = CommonTypeGuards.makeNullableFunction(baseGuard);
 
             return nullableGuard;
