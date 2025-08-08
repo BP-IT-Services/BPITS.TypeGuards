@@ -10,6 +10,10 @@ A TypeScript library that provides a fluent, type-safe way to build runtime type
 - [Why Use This Library?](#why-use-this-library)
 - [Basic Usage](#basic-usage)
 - [Built-in Type Guards](#built-in-type-guards)
+  - [Basic Types](#basic-types)
+  - [Date Validation](#date-validation)
+  - [Array Validation](#array-validation)
+  - [Enum Validation](#enum-validation)
 - [Advanced Usage](#advanced-usage)
 - [TypeGuardBuilder vs StrictTypeGuardBuilder](#typeguardbuilder-vs-stricttypeguardbuilder)
 - [Debugging and Logging](#debugging-and-logging)
@@ -209,6 +213,69 @@ const isTodoList = StrictTypeGuardBuilder
   .validateProperty('priorities', CommonTypeGuards.array.arrayOf(CommonTypeGuards.basics.number()))
   .validateProperty('archived', CommonTypeGuards.array.arrayOf(CommonTypeGuards.basics.string()).nullable(undefined))
   .build();
+```
+
+### Enum Validation
+
+```typescript
+CommonTypeGuards.enums.memberOf(enumObject)       // T[keyof T] - validates enum values
+CommonTypeGuards.enums.keyOf(enumObject)          // keyof T - validates enum keys
+
+// Nullable versions
+CommonTypeGuards.enums.memberOf(enumObject).nullable()       // T[keyof T] | null | undefined
+CommonTypeGuards.enums.memberOf(enumObject).nullable(null)   // T[keyof T] | null
+CommonTypeGuards.enums.keyOf(enumObject).nullable()          // keyof T | null | undefined
+CommonTypeGuards.enums.keyOf(enumObject).nullable(null)      // keyof T | null
+
+// Usage with string enum
+enum Status {
+  Active = 'active',
+  Inactive = 'inactive',
+  Pending = 'pending'
+}
+
+// Usage with numeric enum
+enum Priority {
+  Low = 1,
+  Medium = 2,
+  High = 3
+}
+
+// Usage with plain object (acts like enum)
+const Colors = {
+  Red: 'red',
+  Green: 'green',
+  Blue: 'blue'
+} as const;
+
+interface Task {
+  title: string;
+  status: Status;                                    // enum value
+  priority: Priority;                                // enum value
+  statusKey?: keyof typeof Status;                   // enum key
+  color?: typeof Colors[keyof typeof Colors];       // object value
+}
+
+const isTask = StrictTypeGuardBuilder
+  .start<Task>('Task')
+  .validateProperty('title', CommonTypeGuards.basics.string())
+  .validateProperty('status', CommonTypeGuards.enums.memberOf(Status))        // validates 'active', 'inactive', 'pending'
+  .validateProperty('priority', CommonTypeGuards.enums.memberOf(Priority))     // validates 1, 2, 3
+  .validateProperty('statusKey', CommonTypeGuards.enums.keyOf(Status).nullable(undefined))  // validates 'Active', 'Inactive', 'Pending'
+  .validateProperty('color', CommonTypeGuards.enums.memberOf(Colors).nullable(undefined))   // validates 'red', 'green', 'blue'
+  .build();
+
+// Example usage demonstrating the difference
+const statusValue = 'active';        // This is a Status enum value
+const statusKey = 'Active';          // This is a Status enum key
+
+if (CommonTypeGuards.enums.memberOf(Status)(statusValue)) {
+  // statusValue is now typed as Status ('active' | 'inactive' | 'pending')
+}
+
+if (CommonTypeGuards.enums.keyOf(Status)(statusKey)) {
+  // statusKey is now typed as keyof typeof Status ('Active' | 'Inactive' | 'Pending')
+}
 ```
 
 ## Advanced Usage
