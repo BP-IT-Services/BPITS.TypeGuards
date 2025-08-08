@@ -738,10 +738,11 @@ export abstract class CommonTypeGuards {
          *
          * This function works with both numeric and string enums, as well as plain objects.
          * It checks if the input value matches any of the values in the provided enum/object.
+         * The type is automatically inferred from the enum/object parameter, providing full type safety.
          *
-         * @template T The enum or object type to validate against
+         * @template T The enum or object type (automatically inferred from enumObject parameter)
          * @param enumObject The enum or object to check membership against
-         * @returns A type guard function for enum/object membership validation with nullable support
+         * @returns A type guard function for enum/object value membership validation with nullable support
          *
          * @example
          * ```typescript
@@ -759,24 +760,29 @@ export abstract class CommonTypeGuards {
          *
          * // Plain object (acts like enum)
          * const Colors = { Red: 'red', Green: 'green', Blue: 'blue' } as const;
-         * type Color = typeof Colors[keyof typeof Colors];
-         * const isColor = CommonTypeGuards.enums.memberOf<Color>(Colors);
+         * const isColor = CommonTypeGuards.enums.memberOf(Colors);
          *
-         * // Usage
+         * // Usage - validates against enum values
          * if (isStatus('active')) {
-         *   // value is now typed as Status
+         *   // value is now typed as Status (which resolves to 'active' | 'inactive' | 'pending')
          *   console.log('Status is valid');
+         * }
+         *
+         * if (isPriority(2)) {
+         *   // value is now typed as Priority (which resolves to 1 | 2 | 3)
+         *   console.log('Priority is valid');
          * }
          *
          * // With nullable variants
          * const isStatusOrNull = CommonTypeGuards.enums.memberOf(Status).nullable(null);
          * const isStatusOrUndefined = CommonTypeGuards.enums.memberOf(Status).nullable(undefined);
+         * const isStatusOrNullish = CommonTypeGuards.enums.memberOf(Status).nullable(); // both null and undefined
          * ```
          */
-        memberOf: <T>(enumObject: Record<string | number, T>): TypeGuardPredicateWithNullable<T[keyof T]> => {
-            const enumValues = Object.values(enumObject);
+        memberOf: <T extends Record<PropertyKey, unknown>>(enumObject: T): TypeGuardPredicateWithNullable<T[keyof T]> => {
+            const enumValues = Object.values(enumObject as object);
             const baseGuard = (obj: unknown): obj is T[keyof T] => {
-                return enumValues.includes(obj as T);
+                return enumValues.includes(obj as T[keyof T]);
             };
 
             const nullableGuard = baseGuard as TypeGuardPredicateWithNullable<T[keyof T]>;

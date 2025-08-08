@@ -568,7 +568,6 @@ describe('CommonTypeGuards', () => {
                     Inactive: 'inactive',
                     Pending: 'pending',
                 } as const;
-                type TestObjectEnum = typeof TestObjectEnum[keyof typeof TestObjectEnum];
 
                 it('should validate string enum membership', () => {
                     const guard = CommonTypeGuards.enums.memberOf(TestStringEnum);
@@ -596,7 +595,7 @@ describe('CommonTypeGuards', () => {
                 });
 
                 it('should validate object enum membership', () => {
-                    const guard = CommonTypeGuards.enums.memberOf<TestObjectEnum>(TestObjectEnum);
+                    const guard = CommonTypeGuards.enums.memberOf(TestObjectEnum);
                     expect(guard('active')).to.be.true;
                     expect(guard('inactive')).to.be.true;
                     expect(guard('pending')).to.be.true;
