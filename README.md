@@ -407,6 +407,7 @@ This library provides two builders:
 - **Compile-time validation**: Ensures all properties are validated or ignored
 - **Type safety**: Prevents you from forgetting to validate properties
 - **Better developer experience**: Clear error messages guide you to missing validations
+- **Strict type matching**: Requires type guards to exactly match the property type (e.g., `string | null` requires `string | null`, not just `string`)
 
 **Important**: When using `StrictTypeGuardBuilder`, you **must** validate or ignore all properties before calling `build()` or `build().nullable()`. If you don't, TypeScript will show a compile error indicating which properties are missing validation.
 
@@ -460,6 +461,20 @@ const incompleteGuard = StrictTypeGuardBuilder
 ```
 
 The error message tells you exactly which properties need validation, making it easy to fix.
+
+### Troubleshooting Type Mismatch Errors
+
+When your type guard doesn't match the expected type, you'll see a TypeScript error like:
+
+```
+TS2345: Argument of type ... is not assignable to parameter of type
+ExpectedTypeGuardFor<string | null | undefined>
+```
+
+The expected type is shown in the `ExpectedTypeGuardFor<...>` generic. For example:
+- `ExpectedTypeGuardFor<string | null | undefined>` means you need `.nullable()` 
+- `ExpectedTypeGuardFor<string | null>` means you need `.nullable(null)`
+- `ExpectedTypeGuardFor<string>` means you need just `string()` without nullable
 
 ## Debugging and Logging
 

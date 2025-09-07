@@ -2,6 +2,58 @@
 import { TypeGuardBuilder } from "./type-guard-builder";
 import { ValidatedBuildResult } from "./types/internal/validated-build-result";
 
+// Extract nullability signature from a type
+type NullabilitySignature<T> =
+    null extends T
+        ? undefined extends T
+            ? 'null-undefined'
+            : 'null'
+        : undefined extends T
+            ? 'undefined'
+            : 'none';
+
+// Check if nullability signatures match
+type MatchesNullability<TExpected, TProvided> =
+    NullabilitySignature<TExpected> extends NullabilitySignature<TProvided>
+        ? true
+        : false;
+
+// Generate error message based on nullability mismatch
+type NullabilityErrorMessage<TExpected, TProvided> =
+    NullabilitySignature<TExpected> extends 'null-undefined'
+        ? NullabilitySignature<TProvided> extends 'none'
+            ? "Missing 'null | undefined'. Add .nullable()"
+            : NullabilitySignature<TProvided> extends 'null'
+                ? "Missing 'undefined'. Use .nullable() instead of .nullable(null)"
+                : "Missing 'null'. Use .nullable() instead of .nullable(undefined)"
+        : NullabilitySignature<TExpected> extends 'null'
+            ? NullabilitySignature<TProvided> extends 'none'
+                ? "Missing 'null'. Add .nullable(null)"
+                : NullabilitySignature<TProvided> extends 'undefined'
+                    ? "Wrong nullability. Use .nullable(null) instead of .nullable(undefined)"
+                    : "Should not include 'undefined'. Use .nullable(null) instead of .nullable()"
+            : NullabilitySignature<TExpected> extends 'undefined'
+                ? NullabilitySignature<TProvided> extends 'none'
+                    ? "Missing 'undefined'. Add .nullable(undefined)"
+                    : NullabilitySignature<TProvided> extends 'null'
+                        ? "Wrong nullability. Use .nullable(undefined) instead of .nullable(null)"
+                        : "Should not include 'null'. Use .nullable(undefined) instead of .nullable()"
+                : NullabilitySignature<TProvided> extends 'none'
+                    ? true  // Both non-nullable, this is fine
+                    : "Type guard should not be nullable. Remove .nullable()";
+
+// Check if the base types are compatible (ignoring nullability)
+type BaseTypesCompatible<TExpected, TProvided> =
+    NonNullable<TProvided> extends NonNullable<TExpected> ? true : false;
+
+// Combined validation
+type ValidateTypeGuard<TExpected, TProvided> =
+    BaseTypesCompatible<TExpected, TProvided> extends false
+        ? true  // If base types don't match, let normal type checking handle it
+        : MatchesNullability<TExpected, TProvided> extends true
+            ? true
+            : NullabilityErrorMessage<TExpected, TProvided>;
+
 /**
  * A strict, compile-time safe builder for creating type guard functions.
  *
@@ -116,11 +168,15 @@ export class StrictTypeGuardBuilder<T, TValidated extends keyof T = never> {
      *   .build();
      * ```
      */
-    public validateProperty<TProperty extends keyof T>(
+    public validateProperty<TProperty extends keyof T, TGuardType>(
         property: TProperty,
-        predicate: TypeGuardPredicate<T[TProperty]>
+        predicate: TypeGuardPredicate<TGuardType> & (
+            ValidateTypeGuard<T[TProperty], TGuardType> extends true
+                ? unknown
+                : ValidateTypeGuard<T[TProperty], TGuardType>
+            )
     ): StrictTypeGuardBuilder<T, TValidated | TProperty> {
-        this._internalBuilder.validateProperty(property, predicate);
+        this._internalBuilder.validateProperty(property, predicate as any);
         return this as unknown as StrictTypeGuardBuilder<T, TValidated | TProperty>;
     }
 
@@ -160,10 +216,10 @@ export class StrictTypeGuardBuilder<T, TValidated extends keyof T = never> {
 
     /**
      * Suppresses missing validator warnings for this type guard builder.
-     * 
+     *
      * This method only suppresses "No validator specified for property..." warnings.
      * Validation failure warnings (e.g., "Validation failed for property...") are still shown.
-     * 
+     *
      * - When called with no arguments, suppresses ALL missing validator warnings
      * - When called with property names, suppresses missing validator warnings only for those specific properties
      *
