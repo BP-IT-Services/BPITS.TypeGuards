@@ -561,41 +561,6 @@ async function fetchUser(id: string): Promise<ApiUser | null> {
 }
 ```
 
-### Form Validation
-
-```typescript
-interface ContactForm {
-    name: string;
-    email: string;
-    phone?: string;
-    message: string;
-    newsletter: boolean;
-}
-
-const isEmail = (obj: unknown): obj is string => {
-    return typeof obj === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(obj);
-};
-
-const isContactForm = StrictTypeGuardBuilder
-    .start<ContactForm>('ContactForm')
-    .validateProperty('name', CommonTypeGuards.basics.string())
-    .validateProperty('email', isEmail)
-    .validateProperty('phone', CommonTypeGuards.basics.string().nullable(undefined))
-    .validateProperty('message', CommonTypeGuards.basics.string())
-    .validateProperty('newsletter', CommonTypeGuards.basics.boolean())
-    .build();
-
-function handleFormSubmit(formData: unknown) {
-    if (isContactForm(formData)) {
-        // Process valid form data
-        console.log(`Contact form from ${formData.name} <${formData.email}>`);
-    } else {
-        // Handle invalid data
-        console.error('Invalid form data submitted');
-    }
-}
-```
-
 ## Best Practices
 
 ### 1. Use Descriptive Type Names
