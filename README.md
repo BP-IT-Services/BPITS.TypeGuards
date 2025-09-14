@@ -464,17 +464,25 @@ The error message tells you exactly which properties need validation, making it 
 
 ### Troubleshooting Type Mismatch Errors
 
-When your type guard doesn't match the expected type, you'll see a TypeScript error like:
+When your type guard doesn't match the expected property type, you'll see descriptive TypeScript errors that guide you to the correct fix.
+
+#### Nullability Mismatch Errors
+
+For **nullability mismatches** (when the nullable/undefined handling doesn't match), the errors follow this format:
 
 ```
-TS2345: Argument of type ... is not assignable to parameter of type
-ExpectedTypeGuardFor<string | null | undefined>
+TS2345: Argument of type TypeGuardPredicateWithNullable<number> is not assignable to parameter of type
+"Incompatibile nullability: Property expects 'null' but type guard doesn't handle it. Add .nullable(null)"
 ```
 
-The expected type is shown in the `ExpectedTypeGuardFor<...>` generic. For example:
-- `ExpectedTypeGuardFor<string | null | undefined>` means you need `.nullable()` 
-- `ExpectedTypeGuardFor<string | null>` means you need `.nullable(null)`
-- `ExpectedTypeGuardFor<string>` means you need just `string()` without nullable
+The error message tells you exactly what's wrong and how to fix it:
+
+- `"Property expects 'null' but type guard doesn't handle it. Add .nullable(null)"` - Your property is `T | null` but you're using a non-nullable type guard
+- `"Property expects 'undefined' but type guard doesn't handle it. Add .nullable(undefined)"` - Your property is `T | undefined` but you're using a non-nullable type guard
+- `"Property expects 'null | undefined' but type guard doesn't handle nullability. Add .nullable()"` - Your property is `T | null | undefined` but you're using a non-nullable type guard
+- `"Property is not nullable but type guard handles nullability. Remove .nullable()"` - Your property is just `T` but you're using `.nullable()`
+
+These nullability validation errors ensure strict type matching between your interface properties and type guards, preventing runtime type mismatches involving `null` and `undefined` values.
 
 ## Debugging and Logging
 

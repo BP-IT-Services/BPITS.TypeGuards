@@ -80,8 +80,8 @@ describe('StrictTypeGuardBuilder', () => {
             const guard = StrictTypeGuardBuilder
                 .start<OptionalFieldsTest>('OptionalFieldsTest')
                 .validateProperty('required', CommonTypeGuards.basics.string())
-                .validateProperty('optional', CommonTypeGuards.basics.nullableNumber())
-                .validateProperty('nullable', CommonTypeGuards.basics.nullableString())
+                .validateProperty('optional', CommonTypeGuards.basics.nullableNumber(undefined))
+                .validateProperty('nullable', CommonTypeGuards.basics.nullableString(null))
                 .build();
 
             expect(guard({ required: 'test', nullable: 'value' })).to.be.true;
