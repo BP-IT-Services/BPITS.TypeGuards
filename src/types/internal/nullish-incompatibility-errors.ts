@@ -21,6 +21,14 @@ export type HasNullishCompatibility<TExpected, TProvided> =
 export type NullishTypesCompatible<TExpected, TProvided> =
     NonNullable<TProvided> extends NonNullable<TExpected> ? true : false;
 
+// Check if the base types are compatible in either direction (for type guards)
+export type TypesCompatible<TExpected, TProvided> =
+    NonNullable<TProvided> extends NonNullable<TExpected>
+        ? true  // Type guard is more specific than property type
+        : NonNullable<TExpected> extends NonNullable<TProvided>
+            ? true  // Property type is more specific than type guard
+            : false;
+
 // Generate descriptive error messages
 export type NullabilityErrorMessage<TExpected, TProvided> =
     NullabilitySignature<TExpected> extends 'null-undefined'

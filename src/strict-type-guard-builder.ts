@@ -3,6 +3,7 @@ import { TypeGuardBuilder } from "./type-guard-builder";
 import { ValidatedBuildResult } from "./types/internal/validated-build-result";
 import {
     NullishTypesCompatible,
+    TypesCompatible,
     HasNullishCompatibility,
     NullabilityErrorMessage
 } from "./types/internal/nullish-incompatibility-errors";
@@ -123,11 +124,13 @@ export class StrictTypeGuardBuilder<T, TValidated extends keyof T = never> {
      */
     public validateProperty<TProperty extends keyof T, TGuardType>(
         property: TProperty,
-        predicate: NullishTypesCompatible<T[TProperty], TGuardType> extends false
-            ? TypeGuardPredicate<TGuardType>  // Let normal type checking handle base type mismatches
-            : HasNullishCompatibility<T[TProperty], TGuardType> extends true
-                ? TypeGuardPredicate<TGuardType>
-                : NullabilityErrorMessage<T[TProperty], TGuardType>
+        predicate: TypesCompatible<T[TProperty], TGuardType> extends false
+            ? `Type guard for property '${string & TProperty}' must match property type. Expected: TypeGuardPredicate<${T[TProperty] & string}>, but received: TypeGuardPredicate<${TGuardType & string}>`
+            : NullishTypesCompatible<T[TProperty], TGuardType> extends false
+                ? TypeGuardPredicate<TGuardType>  // Compatible base types, allow nullability differences
+                : HasNullishCompatibility<T[TProperty], TGuardType> extends true
+                    ? TypeGuardPredicate<TGuardType>
+                    : NullabilityErrorMessage<T[TProperty], TGuardType>
     ): StrictTypeGuardBuilder<T, TValidated | TProperty> {
         this._internalBuilder.validateProperty(property, predicate as any);
         return this as unknown as StrictTypeGuardBuilder<T, TValidated | TProperty>;
