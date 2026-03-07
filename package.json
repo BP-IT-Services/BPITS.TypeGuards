@@ -13,20 +13,20 @@
     "test:unit": "npx mocha tests/unit/**/*.test.ts"
   },
   "devDependencies": {
-    "@rollup/plugin-typescript": "^12.1.4",
-    "@types/chai": "^4.3.10",
+    "@rollup/plugin-typescript": "^12.3.0",
+    "@types/chai": "^4.3.20",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^24.1.0",
-    "chai": "^5.2.1",
-    "mocha": "^11.7.1",
-    "rollup": "^4.46.2",
+    "@types/node": "^24.12.0",
+    "chai": "^5.3.3",
+    "mocha": "^11.7.5",
+    "rollup": "^4.59.0",
     "rollup-plugin-copy": "^3.5.0",
-    "rollup-plugin-dts": "^6.2.1",
+    "rollup-plugin-dts": "^6.3.0",
     "shx": "^0.4.0",
     "ts-node": "^10.9.2",
     "tslib": "^2.8.1",
-    "tsx": "^4.20.3",
-    "typescript": "^5.5.3"
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   },
   "mocha": {
     "require": [
