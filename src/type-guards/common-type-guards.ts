@@ -1,6 +1,7 @@
 ﻿import { TypeGuardPredicate, TypeGuardPredicateWithNullable } from "../types";
 import { Nullish } from "../types/internal/nullish";
 import { NullableVariantFactory } from "../types/internal/type-guards/nullable-variant-factory";
+import {TypeGuardBuilder} from "../type-guard-builder";
 
 /**
  * Factory interface that provides both base type guard creation and nullable variants.
@@ -607,7 +608,7 @@ export abstract class CommonTypeGuards {
                 }
 
                 const membersValid = obj.every(typeGuard);
-                if (!membersValid) {
+                if (!membersValid && TypeGuardBuilder.LogValidationWarnings) {
                     console.warn('Validation failed for member of array');
                 }
 
@@ -700,7 +701,7 @@ export abstract class CommonTypeGuards {
                 return CommonTypeGuards.basics.nullish(obj, ...nullishValues)
 
             const membersValid = obj.every(typeGuard);
-            if (!membersValid) {
+            if (!membersValid && TypeGuardBuilder.LogValidationWarnings) {
                 console.warn('Validation failed for member of array');
             }
 

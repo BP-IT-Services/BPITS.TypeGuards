@@ -53,6 +53,22 @@ export class TypeGuardBuilder<T> {
      */
     public static LogValueReceived: boolean = true;
 
+    /**
+    * Controls whether validation warnings are logged when validation fails.
+    * Set to false to suppress all validation warnings.
+    *
+    * @default true
+    *
+    * @example
+    * ```typescript
+    * // Disable validation warnings
+    * TypeGuardBuilder.LogValidationWarnings = false;
+    *
+    * // Now validation failures will no longer produce console warnings
+    * ```
+    */
+   public static LogValidationWarnings: boolean = true;
+
     private _rootValidators: Array<(obj: unknown) => obj is T> = [];
     private _validators = new Map<keyof T, Array<(obj: unknown) => obj is T[keyof T]>>();
     private _suppressAllMissingValidatorWarnings: boolean = false;
@@ -362,7 +378,10 @@ export class TypeGuardBuilder<T> {
                 return false;
 
             if (!this._rootValidators.every(v => v(obj))) {
-                console.warn(`Validation failed for root object in '${this._rootTypeName}'. Value received:`, this.sanitiseValueReceived(obj));
+                if (TypeGuardBuilder.LogValidationWarnings) {
+                    console.warn(`Validation failed for root object in '${this._rootTypeName}'. Value received:`, this.sanitiseValueReceived(obj));
+                }
+                
                 return false;
             }
 
@@ -372,7 +391,10 @@ export class TypeGuardBuilder<T> {
             for (const key of objKeys) {
                 const keyValidator = this._validators.get(key);
                 if (!keyValidator) {
-                    if (!hasRootValidator && !this._suppressAllMissingValidatorWarnings && !this._suppressedMissingValidatorWarningProperties.has(key.toString())) {
+                    if (!hasRootValidator
+                        && TypeGuardBuilder.LogValidationWarnings    
+                        && !this._suppressAllMissingValidatorWarnings 
+                        && !this._suppressedMissingValidatorWarningProperties.has(key.toString())) {
                         // Only show console warnings if a root validator wasn't supplied and warnings aren't suppressed
                         console.warn(`No validator specified for property '${key.toString()}' in '${this._rootTypeName}'`);
                     }
@@ -382,7 +404,10 @@ export class TypeGuardBuilder<T> {
 
                 const value = recordObj[key];
                 if (!keyValidator.every(v => v(value))) {
-                    console.warn(`Validation failed for property '${key.toString()}' in '${this._rootTypeName}'. Value received:`, this.sanitiseValueReceived(value));
+                    if (TypeGuardBuilder.LogValidationWarnings) {
+                        console.warn(`Validation failed for property '${key.toString()}' in '${this._rootTypeName}'. Value received:`, this.sanitiseValueReceived(value));
+                    }
+                    
                     return false;
                 }
             }

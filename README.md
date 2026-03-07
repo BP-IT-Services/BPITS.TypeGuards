@@ -510,6 +510,16 @@ TypeGuardBuilder.LogValueReceived = false;
 // Now failed validations will show "redacted" instead of actual values
 ```
 
+You can also suppress validation warnings entirely (useful for production environments or testing):
+
+```typescript
+import { TypeGuardBuilder } from '@bpits/type-guards';
+
+// Disable all validation warnings
+TypeGuardBuilder.LogValidationWarnings = false;
+// Now validation failures will no longer produce console warnings
+```
+
 ## Real-World Examples
 
 ### API Response Validation
